@@ -1,0 +1,42 @@
+// This file contains the gender information of a few words
+// Taken from: http://www.esldesk.com/vocabulary/pronouns
+// The format is:
+// Word\tGender
+he	male
+his	male
+him	male
+himself	male
+//
+i	self
+me	self
+mine	self
+myself	self
+my	self
+//
+it	neutral
+its	neutral
+itself	neutral
+this	neutral
+//
+she	female
+her	female
+herself	female
+hers	female
+//
+you	other
+your	other
+yours	other
+yourself	other
+yourselves	other
+//
+a	null
+an	null
+the	null
+these	null
+those	null
+//
+we	pluralselves
+us	pluralselves
+//
+them	plural
+they	plural

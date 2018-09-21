@@ -1,0 +1,194 @@
+%
+type1_conn(because;so;stop;in_order_to;that;when;to).
+type2_fwd_conn(so;semi_colon).
+type2_inv_conn(because;even_though;although).
+type3_fwd_conn(so;comma;semi_colon;stop).
+type3_inv_conn(because).
+type4_fwd_conn(so;until).%comma
+type4_inv_conn(because;after).
+type6_fwd_conn(and;but).
+type6_bwd_conn(after).
+type9_1_fwd_conn(but;stop).
+copular_verb(be;have).
+
+
+copularVerb(V) :- has_part1(V,instance_of,COP), has_part1(V,pos,v), copular_verb(COP).
+copularVerb(V) :- has_part2(V,instance_of,COP), has_part2(V,pos,v), copular_verb(COP).
+nCopVerb(V) :- not copularVerb(V), has_part1(V,instance_of,C), has_part1(V,pos,v).%, C!=COP, copular_verb(COP).
+nCopVerb(V) :- not copularVerb(V), has_part2(V,instance_of,C), has_part2(V,pos,v).%, C!=COP, copular_verb(COP).
+
+negative_part1(A) :- has_part1(A,negative,N).
+negative_part2(B) :- has_part2(B,negative,N).
+positive_part1(A) :- not negative_part1(A),has_part1(A,instance_of,AA).
+positive_part2(B) :- not negative_part2(B),has_part2(B,instance_of,BB).
+
+% Rules for type 1 Knowledge extraction
+% execution of A1 [ARG*: X; ARG*:Y] may cause execution of A2  [ARG*: W; ARG*:Z] (W=X or W=Y or Z=X or Z=Y)
+type1(positive,V1,VV1,R1,X1,C,positive,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type1_conn(C).
+type1(positive,V1,VV1,R1,X1,C,positive,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), X1=X2, has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type1_conn(C).
+
+type1(positive,V1,VV1,R1,X1,C,negative,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), negative_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type1_conn(C).
+
+type1(negative,V1,VV1,R1,X1,C,negative,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, negative_part1(V1), negative_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type1_conn(C).
+
+type1(negative,V1,VV1,R1,X1,C,positive,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, negative_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type1_conn(C).
+
+% Rules for type 2 Knowledge extraction
+% X.PROP = true/false may prevent execution of A1 [ARG*: X; ARG*:Y]
+type2(positive,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), negative_part1(V1), R1!=pos, nCopVerb(V1), has_part1(X1,trait,T).
+type2(positive,T,V1,VV1,R1) :- has_part2(V1,R1,X1), has_part2(V1,instance_of,VV1), negative_part2(V1), R1!=pos, nCopVerb(V1), has_part2(X1,trait,T).
+
+type2(positive,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), negative_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), positive_part2(T), has_part1(X1,instance_of,XX), has_part2(X2,instance_of,XX), conn(C), type2_inv_conn(C).
+
+type2(positive,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), positive_part2(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), negative_part2(V2), R2!=pos, nCopVerb(V2), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type3_fwd_conn(C).
+
+type2(negative,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), negative_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), negative_part2(T), has_part1(X1,instance_of,XX), has_part2(X2,instance_of,XX), conn(C), type2_inv_conn(C).
+
+type2(negative,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), negative_part2(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), negative_part2(V2), R2!=pos, nCopVerb(V2), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type3_fwd_conn(C).
+
+% Rules for type 3 Knowledge extraction
+% X.property = true/false may cause execution of A [ARG*: X; ARG*:Y] 
+type3(positive,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), positive_part2(T), has_part1(X1,instance_of,XX), conn(C), type3_inv_conn(C), has_part2(X2,instance_of,XX).
+
+type3(positive,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), positive_part1(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), positive_part2(V2), R2!=pos, nCopVerb(V2), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type3_fwd_conn(C).
+
+type3(negative,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), negative_part2(T), has_part1(X1,instance_of,XX), has_part2(X2,instance_of,XX), conn(C), type3_inv_conn(C).
+
+type3(negative,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), negative_part1(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), positive_part2(V2), R2!=pos, nCopVerb(V2), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type3_fwd_conn(C).
+
+
+type3(positive,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), positive_part2(T), X1=X2, conn(C), type3_inv_conn(C).
+
+type3(positive,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), positive_part1(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), positive_part2(V2), R2!=pos, nCopVerb(V2), X2=X1, conn(C), type3_fwd_conn(C).
+
+type3(negative,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), negative_part2(T), X1=X2, conn(C), type3_inv_conn(C).
+
+type3(negative,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), negative_part1(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), positive_part2(V2), R2!=pos, nCopVerb(V2), X2=X1, conn(C), type3_fwd_conn(C).
+
+%%%
+type3(positive,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), nCopVerb(V1), R1!=pos, has_part1(X1,trait,T), positive_part1(T), conn(null).
+has_part1(X1,trait,T) :- has_part1(V1,agent,X1), has_part1(V1,instance_of,be), has_part1(V1,recipient,X2), has_part1(X2,trait,T).
+has_part2(X1,trait,T) :- has_part2(V1,agent,X1), has_part2(V1,instance_of,be), has_part2(V1,recipient,X2), has_part2(X2,trait,T).
+
+%%%
+
+% Rules for type 4 Knowledge extraction
+% execution of A1 [ARG*: X; ARG*:Y] may cause X.property = true/false
+
+type4(positive,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), positive_part2(T), has_part1(X1,instance_of,XX), has_part2(X2,instance_of,XX), conn(C), type4_fwd_conn(C).
+
+type4(positive,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), positive_part1(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), positive_part2(V2), R2!=pos, nCopVerb(V2), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type4_inv_conn(C).
+
+%%
+type4(positive,T,V1,VV1,R1) :- has_part1(V1,R1,X1), nCopVerb(V1), R1!=pos, has_part2(X2,trait,T), positive_part2(T), has_part1(V1,instance_of,VV1), positive_part1(V1), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type4_fwd_conn(C).
+%%
+
+type4(negative,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), negative_part2(T), has_part1(X1,instance_of,XX), has_part2(X2,instance_of,XX), conn(C), type4_fwd_conn(C).
+
+type4(negative,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), negative_part1(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), positive_part2(V2), R2!=pos, nCopVerb(V2), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type4_inv_conn(C).
+
+% 12/26/2017
+type4(positive,T,V1,VV1,R1) :- has_part2(V1,R1,X1), nCopVerb(V1), R1!=pos, positive_part2(V1), has_part1(X1,trait,T), positive_part1(T), has_part2(V1,instance_of,VV1), conn(C), type4_inv_conn(C).
+type9_1(positive,V1,VV1,R1,positive,T) :- type4(positive,T,V1,VV1,R1).
+
+% Rules for type 5 Knowledge extraction
+% execution of A1 [ARG*: X; ARG*:Y] may prevent execution of A2 [ARG*: X; ARG*:Z]
+type5(negative,V1,VV1,R1,X1,positive,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, negative_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(then), initconn(if).
+
+type5(negative,V1,VV1,R1,X1,positive,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, negative_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(comma), initconn(if).
+
+% Rules for type 6 Knowledge extraction
+% execution of A1 [ARG*: X; ARG*:Y] may be followed by execution of A2  [ARG*: W; ARG*:Z] (W=X or W=Y or Z=X or Z=Y)
+type6(positive,V1,VV1,R1,X1,C,positive,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type6_fwd_conn(C).
+
+type6(positive,V1,VV1,R1,X1,C,negative,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), negative_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type6_fwd_conn(C).
+
+type6(negative,V1,VV1,R1,X1,C,negative,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, negative_part1(V1), negative_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type6_fwd_conn(C).
+
+type6(negative,V1,VV1,R1,X1,C,positive,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, negative_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type6_fwd_conn(C).
+
+% 11/29/2017
+type6(positive,V1,VV1,R1,X,C,positive,V2,VV2,R2,X) :- has_part1(V1,R1,X), has_part2(V2,R2,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type6_fwd_conn(C).
+
+type6(positive,V1,VV1,R1,X,C,negative,V2,VV2,R2,X) :- has_part1(V1,R1,X), has_part2(V2,R2,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), negative_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type6_fwd_conn(C).
+
+type6(negative,V1,VV1,R1,X,C,negative,V2,VV2,R2,X) :- has_part1(V1,R1,X), has_part2(V2,R2,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, negative_part1(V1), negative_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type6_fwd_conn(C).
+
+type6(negative,V1,VV1,R1,X,C,positive,V2,VV2,R2,X) :- has_part1(V1,R1,X), has_part2(V2,R2,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, negative_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type6_fwd_conn(C).
+%
+%% 12/05/2017
+type6(positive,V2,VV2,R2,X2,C,positive,V1,VV1,R1,X) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), type6_bwd_conn(C).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+
+% 12/03/2017
+type9_2(positive,V1,VV1,R1,X1,and,positive,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part1(V2,R2,X2), has_part1(V1,instance_of,VV1), has_part1(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), positive_part1(V2), nCopVerb(V1), nCopVerb(V2), has_part1(X1,instance_of,X), has_part1(X2,instance_of,X), V1!=V2, not type9_2(positive,V2,VV2,R2,X2,and,positive,V1,VV1,R1,X1).
+
+type9_2(negative,V1,VV1,R1,X1,and,positive,V2,VV2,R2,X2) :- has_part1(V1,R1,X1), has_part1(V2,R2,X2), has_part1(V1,instance_of,VV1), has_part1(V2,instance_of,VV2), R1!=pos, R2!=pos, negative_part1(V1), positive_part1(V2), nCopVerb(V1), nCopVerb(V2), has_part1(X1,instance_of,X), has_part1(X2,instance_of,X), V1!=V2, not type9_2(positive,V2,VV2,R2,X2,and,positive,V1,VV1,R1,X1).
+%%
+
+% 01/09/2018
+type1_1(positive,V1,VV1,R1,X1,and,positive,V2,VV2,R2,X2,modifier,M,MM) :- has_part1(V1,R1,X1), has_part1(V2,R2,X2), has_part1(V1,instance_of,VV1), has_part1(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), positive_part1(V2), nCopVerb(V1), nCopVerb(V2), has_part1(X1,instance_of,X), has_part1(X2,instance_of,X), V1!=V2, not type1_1(positive,V2,VV2,R2,X2,and,positive,V1,VV1,R1,X1), has_part1(V2,modifier,M), has_part1(M,instance_of,MM).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 12/08/2017
+type9_1(positive,V1,VV1,R1,positive,T) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), positive_part2(T), has_part1(X1,instance_of,XX), has_part2(X2,instance_of,XX), conn(C), type9_1_fwd_conn(C).
+
+type9_1(positive,V1,VV1,R1,negative,T) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), negative_part2(T), has_part1(X1,instance_of,XX), has_part2(X2,instance_of,XX), conn(C), type9_1_fwd_conn(C).
+
+% 12/18/2017
+type9_1(positive,V1,VV1,R1,negative,T) :- type3(negative,T,V1,VV1,R1).
+type9_1(positive,V1,VV1,R1,positive,T) :- type3(positive,T,V1,VV1,R1).
+
+% 12/19/2017
+%type9_1(negative,V1,VV1,R1,positive,T) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), negative_part1(V1), R1!=pos, has_part1(X1,trait,T), positive_part1(T).
+
+% 12/20/2017
+type9_2(positive,V1,VV1,R1,X1,and,positive,V2,VV2,R2,X2) :- type1(positive,V1,VV1,R1,X1,C,positive,V2,VV2,R2,X2).
+
+% 12/21/2017
+type4_1(positive,V1,VV1,R1,positive,A,AA,R2,positive,T) :- has_part1(V1,R1,A), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(A,R2,X1), R2!=pos, has_part1(X2,trait,T), positive_part1(T), has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX), positive_part1(A), has_part1(A,instance_of,AA).
+
+type1Other(positive,V1,VV1,R1,positive,AA,P,R2,positive,V2,VV2,R3) :- has_part1(V1,R1,A), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(A,R2,X1), R2!=pos, has_part1(V2,R3,X2),nCopVerb(V2),has_part1(V2,instance_of,VV2), positive_part1(V2), has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX), positive_part1(A), has_part1(A,instance_of,AA), not has_part1(A,pos,v), has_part1(A,pos,P).
+
+type9_1(positive,V1,VV1,R1,positive,T) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(X2,trait,T), positive_part1(T), has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX).
+
+% 12/27/2017
+type9_1(positive,V1,VV1,R1,positive,T) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(T,is_trait_of,X2), positive_part1(T), has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX).
+
+% 12/28/2017
+type4Other1(positive,V1,VV1,R1,positive,T,positive,A,AA,is_possessed_by) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(T,is_trait_of,A), positive_part1(T), positive_part1(A), has_part1(A,instance_of,AA), has_part1(A,is_possessed_by,X2),  has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX), not has_part1(A,pos,v).
+
+% 12/29/2017
+type1Other(positive,V1,VV1,R1,positive,AA,P,R2,negative,V2,VV2,R3) :- has_part1(V1,R1,A), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(A,R2,X1), R2!=pos, has_part1(V2,R3,X2),nCopVerb(V2),has_part1(V2,instance_of,VV2), negative_part1(V2), has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX), positive_part1(A), has_part1(A,instance_of,AA), not has_part1(A,pos,v), has_part1(A,pos,P).
+
+% 12/22/2017
+%type9_1(negative,V1,VV1,R1,positive,T) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), negative_part1(V1), R1!=pos, nCopVerb(V1), has_part1(X1,trait,T), positive_part1(T).
+
+%type4(positive,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), positive_part1(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), positive_part2(V2), R2!=pos, nCopVerb(V2), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type4_inv_conn(C).
+
+%%
+%type4(positive,T,V1,VV1,R1) :- has_part1(V1,R1,X1), nCopVerb(V1), R1!=pos, has_part2(X2,trait,T), positive_part2(T), has_part1(V1,instance_of,VV1), positive_part1(V1), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type4_fwd_conn(C).
+%%
+
+%type4(negative,T,V1,VV1,R1) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part2(V2,R2,X2), copularVerb(V2), R2!=pos, has_part2(X2,trait,T), negative_part2(T), has_part1(X1,instance_of,XX), has_part2(X2,instance_of,XX), conn(C), type4_fwd_conn(C).
+
+%type4(negative,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), negative_part1(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), positive_part2(V2), R2!=pos, nCopVerb(V2), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type4_inv_conn(C).
+
+
+
+%#hide.
+#show type1/11.
+#show type2/5.
+#show type3/5.
+#show type4/5.
+#show type5/10.
+#show type6/11.
+#show type9_2/11.
+#show type9_1/6.
+#show type4_1/10.
+#show type4Other1/10.
+#show type1Other/12.
+#show type1_1/14.
+

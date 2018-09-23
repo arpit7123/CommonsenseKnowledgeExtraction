@@ -98,8 +98,7 @@ public class ClingoExecutor {
 	}
 	
 	public ArrayList<String> callASPusingCmd(String cmmd) throws InterruptedException{// sentFile, String bkFile, String rulesFile){
-//		System.out.println(cmmd);
-		command = cmmd;//clingoPath + " " +cmmd;
+		command = cmmd;
 		ArrayList<String> result = null;
 		try {
 			switch (currentOS) {
@@ -146,41 +145,8 @@ public class ClingoExecutor {
 
 
 	public static void main(String[] args) throws IOException, InterruptedException{
-		
-//		String sentRepASPFile = "/home/arpit/workspace/WinogradPhd/Clingo/sent.txt";
-//		String quesRepASPFile = "/home/arpit/workspace/WinogradPhd/Clingo/ques.txt";
-//		String knowRepASPFile = "/home/arpit/workspace/WinogradPhd/Clingo/know.txt";
-//		String clingoPath = "/home/arpit/workspace/WinogradPhd/Clingo/clingo";
-//		String reasoningRulesPath = "/home/arpit/workspace/WinogradPhd/Clingo/just_rules.txt";
 		String clingo = "/home/arpit/workspace/WinogradPhd/WebContent/WEB-INF/lib/Clingo/clingo";
-		
 		ClingoExecutor cw = new ClingoExecutor(clingo);
-//		
-//		ArrayList<String> list = new ArrayList<String>(4);
-//		for(int i=0;i<4;++i){
-//			list.add("");
-//		}
-//		list.set(0, reasoningRulesPath);
-//		list.set(1, sentRepASPFile);
-//		list.set(2, quesRepASPFile);
-//		list.set(3, knowRepASPFile);
-//		
-//		ArrayList<String> res = null;
-//		try {
-//			res = cw.callASPusingFilesList(list);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-//
-//		if(res!=null){
-//			System.out.println("Knowledge found:");
-//			for(String s : res){
-//				System.out.println(s);
-//			}
-//		}
-//		System.out.println("Finished !!!");		
-//
-//		System.exit(0);
 		String rules = "/home/arpit/workspace/WinogradPhd/WebContent/WEB-INF/lib/Clingo/reasoning/just_rules.txt";
 		
 		ArrayList<String> listOfFiles = new ArrayList<String>();
@@ -191,26 +157,6 @@ public class ClingoExecutor {
 		for(String s : res){
 			System.out.println(s);
 		}
-		
-//		for(int i=1;i<=5;++i){
-//			String command = clingo + " " + rules + " " + i + ".txt";
-//			String[] cmd = {
-//					"/bin/sh",
-//					"-c",
-//					command
-//			};
-//			Process process;
-//			process = Runtime.getRuntime().exec(cmd);
-//			process.waitFor();
-//
-//			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-//			String line = null;
-//			while((line=stdInput.readLine())!=null){
-//				System.out.println(line);
-//			}
-//		}
-		
-
 	}
 
 }

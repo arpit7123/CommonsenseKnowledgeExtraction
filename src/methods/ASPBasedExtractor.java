@@ -19,10 +19,8 @@ import utils.ASPDataPreparer;
 import utils.ClingoExecutor;
 import utils.Configurations;
 import utils.EventSubgraphsExtractor;
-import utils.LocalKparser;
 import utils.TextPreprocessor;
 import module.graph.helper.GraphPassingNode;
-import module.graph.helper.JAWSutility;
 import module.graph.helper.Node;
 
 /**
@@ -36,37 +34,27 @@ public class ASPBasedExtractor {
 
 //	private static final int words_chars_limit = 40;
 
-	//	private SentenceToGraph stg = null;
-	private LocalKparser lk = null;
-//	private SentenceToGraph stg = null;
 	private EventSubgraphsExtractor eventExtractor = null;
 	private ASPDataPreparer aspPreparer = null;
 	private ClingoExecutor clingoWrapper = null;
 	private TextPreprocessor preprocessor = null;
 	private ASP2KnowObject asp2KnowObj = null;
+	private SentenceParser sentParser = null;
 
 	public ASPBasedExtractor(){
-		lk = new LocalKparser();
 		eventExtractor = EventSubgraphsExtractor.getInstance();
 		aspPreparer = ASPDataPreparer.getInstance();
 		clingoWrapper = new ClingoExecutor(Configurations.getProperty("clingopath"));
 		preprocessor = TextPreprocessor.getInstance();
 		asp2KnowObj = ASP2KnowObject.getInstance();
+		sentParser = SentenceParser.getInstance();
 	}
 
-	public static void main_(String[] args){
-		String word = "by";
-		JAWSutility j = new JAWSutility();
-		System.out.println(j.getBaseForm(word, "v"));
-
-	}
-
-//	@SuppressWarnings("unused")
 	public static void main(String[] args)throws Exception{
 		ASPBasedExtractor main = new ASPBasedExtractor();
 		String sentence = "Usually when I eat it is because I am hungry.";
 		sentence = "Williams was reluctant to repeat what she had said to the official";
-		ArrayList<String> know = main.getKnowledge(sentence);
+		ArrayList<String> know = main.getKnowledge(sentence,null,null);
 		if(know!=null){
 			for(String s : know){
 				System.out.println(s);
@@ -74,44 +62,8 @@ public class ASPBasedExtractor {
 		}else{
 			System.out.println("Knowledge not found!");
 		}
-
-//		String inFile = "/home/arpit/workspace/WinogradPhd/WebContent/WEB-INF/lib/WSC_data/type1_know_sents.txt";
-//		String inFile = "/home/arpit/workspace/WinogradPhd/dataForCompre/knowExtEvalData.txt";
-//		String inFile = "/home/arpit/workspace/WinogradPhd/WebContent/WEB-INF/lib/WSC_data/auto_knowledge/type3";
-//		main.getAndPrintKnowledge(inFile);
-		
 		
 		System.exit(0);
-	}
-
-	public void getAndPrintKnowledge(String inFile) throws Exception{
-		try(BufferedReader br = new BufferedReader(new FileReader(inFile))){
-			String line = null;
-			int index = 1;
-			while((line=br.readLine())!=null){
-				if(line.trim().equals("")){
-					System.out.println(index++);
-					System.out.println();
-					continue;
-				}
-				
-				if(line.equals("NO")){
-					System.out.println("No Knowledge Sentence Present!");
-					continue;
-				}
-				
-				ArrayList<String> know = getKnowledge(line);
-				if(know!=null){
-					for(String s : know){
-						System.out.println(s);
-					}
-				}else{
-					System.out.println("Knowledge not found!");
-				}
-			}
-		}catch(IOException e){
-			e.printStackTrace();
-		}
 	}
 	
 	public void getKnowFromFile(String inputFile, String outputFile) throws Exception{
@@ -124,9 +76,8 @@ public class ASPBasedExtractor {
 				}
 				ArrayList<String> lines = preprocessor.breakParagraph(line);
 				for(String sent : lines){
-					ArrayList<String> knowledge = getKnowledge(sent.trim());
+					ArrayList<String> knowledge = getKnowledge(sent.trim(),null,null);
 					if(knowledge.size()>0){
-//						System.out.println(knowledge.size());
 						for(String know : knowledge){
 							bw.append(line);
 							bw.newLine();
@@ -144,12 +95,9 @@ public class ASPBasedExtractor {
 		}
 	}
 	
-	public ArrayList<KnowledgeObject> getKnowledgeFromText(String inputText) throws Exception{
+	public ArrayList<KnowledgeObject> getKnowledgeFromText(String inputText, GraphPassingNode gpn, ArrayList<DiscourseInfo> discInfoList) throws Exception{
 		ArrayList<KnowledgeObject> result = null;
-		ArrayList<String> kInstances = getKnowledge(inputText);
-//		for(String inst : kInstances){
-//			System.out.println(inst);
-//		}
+		ArrayList<String> kInstances = getKnowledge(inputText,gpn,discInfoList);
 		
 		int i = 0;
 		if(kInstances!=null){
@@ -178,17 +126,13 @@ public class ASPBasedExtractor {
 		return result;
 	}
 
-	public ArrayList<String> getKnowledge(String inputText) throws Exception{
+	public ArrayList<String> getKnowledge(String inputText, GraphPassingNode gpn, ArrayList<DiscourseInfo> discInfoList) throws Exception{
 		ArrayList<String> result = null;
-		inputText = lk.preprocessText(inputText);
+		if(gpn==null){
+			gpn = sentParser.parse(inputText);
+		}
+		inputText = gpn.getSentence();
 		
-		inputText = preprocessor.removeParentheses(inputText);
-		
-		GraphPassingNode gpn = lk.extractGraphWithoutPrep(inputText, false, true, false, 0);
-//		GraphPassingNode gpn = stg.extractGraph(inputText, false, true);
-//		for(String s : gpn.getAspGraph()){
-//			System.out.println(s);
-//		}
 		HashMap<String,ArrayList<String>> sameGenderRefs = preprocessor.simpleCoreference(gpn);
 		
 		HashMap<String,String> posMap = gpn.getposMap();
@@ -207,30 +151,21 @@ public class ASPBasedExtractor {
 		}
 
 		ArrayList<Node> subgraphs = eventExtractor.extractEventGraphs(gpn);
-		ArrayList<DiscourseInfo> discInfoList = preprocessor.divideUsingDiscConn(sb.toString().trim());
+		if(discInfoList==null){
+			discInfoList = preprocessor.divideUsingDiscConn(sb.toString().trim());
+		}
 		for(DiscourseInfo discInfo : discInfoList){
-//			System.out.println(discInfo.toString());
 			if((discInfo)!=null){
-//				System.out.println(discInfo.getLeftArg());
-//				System.out.println(discInfo.getRightArg());
-
 				aspPreparer.prepareASPFile(discInfo, subgraphs, tempFileName, sameGenderRefs,gpn);
-
 				ArrayList<String> listOfFiles = Lists.newArrayList();
 				listOfFiles.add(tempFileName);
 				listOfFiles.add(aspRulesFileName);
-//				long startASPReasoningTime = System.currentTimeMillis();
 				ArrayList<String> ansFromASP = clingoWrapper.callASPusingFilesList(listOfFiles);
-//				long endASPReasoningTime = System.currentTimeMillis();
-//				System.out.print("ASP Reasoning Time = " + (endASPReasoningTime-startASPReasoningTime));
 				if(ansFromASP!=null){
 					if(result==null){
 						result = new ArrayList<String>();
 					}
 					result.addAll(ansFromASP);
-//					if(ansFromASP.size()>0){
-//						System.out.println(" YES");
-//					}
 				}else{
 					System.err.println("Error in ASP module!!!");
 				}
@@ -239,50 +174,8 @@ public class ASPBasedExtractor {
 		return result;
 	}
 	
-	
-	public ArrayList<String> getKnowledge(String inputText, ArrayList<DiscourseInfo> discInfoList) throws Exception{
-		ArrayList<String> result = new ArrayList<String>();
-		inputText = preprocessor.removeParentheses(inputText);
-		
-		GraphPassingNode gpn = lk.extractGraphWithoutPrep(inputText, false, true, false, 0);
-		
-		HashMap<String,ArrayList<String>> mapOfLists = preprocessor.simpleCoreference(gpn);
-		
-		HashMap<String,String> posMap = gpn.getposMap();
-		HashMap<Integer,String> wordsMap = new HashMap<Integer, String>();
-		for(String s : posMap.keySet()){
-			Pattern wordPat = Pattern.compile("(.*)(-)([0-9]{1,7})");
-			Matcher m = wordPat.matcher(s);
-			if(m.matches()){
-				wordsMap.put(Integer.parseInt(m.group(3).trim()),m.group(1).trim());
-			}
-		}
-
-		StringBuffer sb = new StringBuffer();
-		for(int i=1;i<=wordsMap.size();++i){
-			sb.append(wordsMap.get(i)+" ");
-		}
-
-		ArrayList<Node> subgraphs = eventExtractor.extractEventGraphs(gpn);
-		for(DiscourseInfo discInfo : discInfoList){
-			if((discInfo)!=null){
-//				System.out.println(discInfo.getLeftArg());
-//				System.out.println(discInfo.getRightArg());
-
-				aspPreparer.prepareASPFile(discInfo, subgraphs, tempFileName, mapOfLists, gpn);
-
-				ArrayList<String> listOfFiles = Lists.newArrayList();
-				listOfFiles.add(tempFileName);
-				listOfFiles.add(aspRulesFileName);
-				result.addAll(clingoWrapper.callASPusingFilesList(listOfFiles));
-			}
-		}
-		return result;
-	}
-	
-	
 	public String[] postProcessKnow(String[] kInstances){
-		ArrayList<String> res = lk.postProcessKnow(kInstances);
+		ArrayList<String> res = sentParser.postProcessKnow(kInstances);
 		String[] result = new String[res.size()];
 		for(int i=0;i<res.size();++i){
 			result[i] = res.get(i);
@@ -292,25 +185,8 @@ public class ASPBasedExtractor {
 	
 	public KnowledgeObject getCondKnowledge(String kInstance){
 		KnowledgeObject knowledge = asp2KnowObj.processASPIntoGraph(kInstance, null);
-//		if(knowledge!=null){
-//			knowledge.getRDFKnowledge();
-//		}
 		return knowledge;
 	}
-
-	//	public static void main__(String[] args){
-	//		PDTBResource pdtbRes = PDTBResource.getInstance();
-	//		String inputText = "I spread the cloth on the table in order to protect it.";
-	//		String pennTree = "(ROOT (S (NP (PRP I)) (VP (VBD spread) (NP (DT the) (NN cloth)) (PP (IN on) (NP (DT the) (NN table))) (SBAR (IN in) (NN order) (S (VP (TO to) (VP (VB protect) (NP (PRP it))))))) (. .)))";
-	//		try{
-	//			ArrayList<ConnectivesClass> listOfConns = pdtbRes.getConnAndArgs(inputText, pennTree);
-	//			for(ConnectivesClass conn : listOfConns){
-	//				System.out.println(conn.getConn());
-	//			}
-	//		}catch(Exception e){
-	//			e.printStackTrace();
-	//		}
-	//	}
 
 }
 

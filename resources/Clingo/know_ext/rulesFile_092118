@@ -8,7 +8,20 @@ type4_fwd_conn(so;until).%comma
 type4_inv_conn(because;after).
 type6_fwd_conn(and;but).
 type6_bwd_conn(after).
+type7_fwd_conn(and;but).
+type7_bwd_conn(after).
+type8_fwd_conn(and;but).
+type8_bwd_conn(after).
 type9_1_fwd_conn(but;stop).
+type10_fwd_conn(so).
+type10_bwd_conn(because).
+
+causal_fwd(lead_to;leads_to;led_to;leading_to;give_rise_to;given_rise_to;giving_rise_to;induce;inducing;induces;induced;cause;causing;causes;caused;bring_on;brought_on;bringing_on;brings_on;comma_thus;comma_therefore;and_hence;comma_hence;comma_consequently;and_consequently;comma_for_this_reason_alone_comma).
+causal_bwd(caused_by;results_from;resulting_from;result_from;resulted_from;comma_space_because;because;because_of;comma_inasmuch_as;due_to;in_consequence_of;owing_to;as_a_result_of;as_a_consequence_of).
+
+causal_fwd_conn11( ).
+causal_fwd_conn12().
+
 copular_verb(be;have).
 
 
@@ -102,23 +115,6 @@ type4(positive,T,V1,VV1,R1) :- has_part2(V1,R1,X1), nCopVerb(V1), R1!=pos, posit
 
 %type4(negative,T,V2,VV2,R2) :- has_part1(V1,R1,X1), copularVerb(V1), R1!=pos, has_part1(X1,trait,T), negative_part1(T), has_part2(V2,R2,X2), has_part2(V2,instance_of,VV2), positive_part2(V2), R2!=pos, nCopVerb(V2), has_part2(X2,instance_of,XX), has_part1(X1,instance_of,XX), conn(C), type4_inv_conn(C).
 
-% 12/21/2017
-type4_1(positive,V1,VV1,R1,positive,A,AA,R2,positive,T) :- has_part1(V1,R1,A), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(A,R2,X1), R2!=pos, has_part1(X2,trait,T), positive_part1(T), has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX), positive_part1(A), has_part1(A,instance_of,AA).
-
-% 12/28/2017
-type4Other1(positive,V1,VV1,R1,positive,T,positive,A,AA,is_possessed_by) :- has_part1(V1,R1,X1), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(T,is_trait_of,A), positive_part1(T), positive_part1(A), has_part1(A,instance_of,AA), has_part1(A,is_possessed_by,X2),  has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX), not has_part1(A,pos,v).
-
-% 01/09/2018
-type1_1(positive,V1,VV1,R1,X1,and,positive,V2,VV2,R2,X2,modifier,M,MM) :- has_part1(V1,R1,X1), has_part1(V2,R2,X2), has_part1(V1,instance_of,VV1), has_part1(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), positive_part1(V2), nCopVerb(V1), nCopVerb(V2), has_part1(X1,instance_of,X), has_part1(X2,instance_of,X), V1!=V2, not type1_1(positive,V2,VV2,R2,X2,and,positive,V1,VV1,R1,X1), has_part1(V2,modifier,M), has_part1(M,instance_of,MM).
-
-% 12/21/2017
-type1Other(positive,V1,VV1,R1,positive,AA,P,R2,positive,V2,VV2,R3) :- has_part1(V1,R1,A), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(A,R2,X1), R2!=pos, has_part1(V2,R3,X2),nCopVerb(V2),has_part1(V2,instance_of,VV2), positive_part1(V2), has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX), positive_part1(A), has_part1(A,instance_of,AA), not has_part1(A,pos,v), has_part1(A,pos,P).
-
-% 12/29/2017
-type1Other(positive,V1,VV1,R1,positive,AA,P,R2,negative,V2,VV2,R3) :- has_part1(V1,R1,A), has_part1(V1,instance_of,VV1), positive_part1(V1), R1!=pos, nCopVerb(V1), has_part1(A,R2,X1), R2!=pos, has_part1(V2,R3,X2),nCopVerb(V2),has_part1(V2,instance_of,VV2), negative_part1(V2), has_part1(X1,instance_of,XX), has_part1(X2,instance_of,XX), positive_part1(A), has_part1(A,instance_of,AA), not has_part1(A,pos,v), has_part1(A,pos,P).
-
-
-
 % Rules for type 5 Knowledge extraction
 % execution of A1 [ARG*: X; ARG*:Y] may prevent execution of A2 [ARG*: X; ARG*:Z]
 % Action1 prevents Action2
@@ -152,11 +148,39 @@ type6(positive,V2,VV2,R2,X2,C,positive,V1,VV1,R1,X) :- has_part1(V1,R1,X1), has_
 
 % Rules for type 7 Knowledge extraction
 % Action followed by Property
+type7(positive,V1,VV1,R1,X,positive,T) :- has_part1(V1,R1,X1), has_part2(T,is_trait_of,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), R1!=pos, positive_part1(V1), positive_part2(T), nCopVerb(V1), conn(C), type7_fwd_conn(C).
 
+type7(negative,V1,VV1,R1,X,positive,T) :- has_part1(V1,R1,X1), has_part2(T,is_trait_of,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), R1!=pos, negative_part1(V1), positive_part2(T), nCopVerb(V1), conn(C), type7_fwd_conn(C).
+
+type7(positive,V1,VV1,R1,X,negative,T) :- has_part1(V1,R1,X1), has_part2(T,is_trait_of,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), R1!=pos, positive_part1(V1), negative_part2(T), nCopVerb(V1), conn(C), type7_fwd_conn(C).
+
+type7(negative,V1,VV1,R1,X,negative,T) :- has_part1(V1,R1,X1), has_part2(T,is_trait_of,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), R1!=pos, negative_part1(V1), negative_part2(T), nCopVerb(V1), conn(C), type7_fwd_conn(C).
+
+type7(positive,V1,VV1,R1,X,positive,T) :- has_part2(V1,R1,X1), has_part1(T,is_trait_of,X2), has_part2(X1,instance_of,X), has_part1(X2,instance_of,X), has_part2(V1,instance_of,VV1), R1!=pos, positive_part2(V1), positive_part1(T), nCopVerb(V1), conn(C), type7_bwd_conn(C).
+
+type7(negative,V1,VV1,R1,X,positive,T) :- has_part2(V1,R1,X1), has_part1(T,is_trait_of,X2), has_part2(X1,instance_of,X), has_part1(X2,instance_of,X), has_part2(V1,instance_of,VV1), R1!=pos, negative_part2(V1), positive_part1(T), nCopVerb(V1), conn(C), type7_bwd_conn(C).
+
+type7(positive,V1,VV1,R1,X,negative,T) :- has_part2(V1,R1,X1), has_part1(T,is_trait_of,X2), has_part2(X1,instance_of,X), has_part1(X2,instance_of,X), has_part2(V1,instance_of,VV1), R1!=pos, positive_part2(V1), negative_part1(T), nCopVerb(V1), conn(C), type7_bwd_conn(C).
+
+type7(negative,V1,VV1,R1,X,negative,T) :- has_part2(V1,R1,X1), has_part1(T,is_trait_of,X2), has_part2(X1,instance_of,X), has_part1(X2,instance_of,X), has_part2(V1,instance_of,VV1), R1!=pos, negative_part2(V1), negative_part1(T), nCopVerb(V1), conn(C), type7_bwd_conn(C).
 
 % Rules for type 8 Knowledge extraction
 % Property followed by Action
+type8(positive,T,positive,V1,VV1,R1,X) :- has_part2(V1,R1,X1), has_part1(T,is_trait_of,X2), has_part2(X1,instance_of,X), has_part1(X2,instance_of,X), has_part2(V1,instance_of,VV1), R1!=pos, positive_part2(V1), positive_part1(T), nCopVerb(V1), conn(C), type8_fwd_conn(C).
 
+type8(positive,T,negative,V1,VV1,R1,X) :- has_part2(V1,R1,X1), has_part1(T,is_trait_of,X2), has_part2(X1,instance_of,X), has_part1(X2,instance_of,X), has_part2(V1,instance_of,VV1), R1!=pos, negative_part2(V1), positive_part1(T), nCopVerb(V1), conn(C), type8_fwd_conn(C).
+
+type8(negative,T,positive,V1,VV1,R1,X) :- has_part2(V1,R1,X1), has_part1(T,is_trait_of,X2), has_part2(X1,instance_of,X), has_part1(X2,instance_of,X), has_part2(V1,instance_of,VV1), R1!=pos, positive_part2(V1), negative_part1(T), nCopVerb(V1), conn(C), type8_fwd_conn(C).
+
+type8(negative,T,negative,V1,VV1,R1,X) :- has_part2(V1,R1,X1), has_part1(T,is_trait_of,X2), has_part2(X1,instance_of,X), has_part1(X2,instance_of,X), has_part2(V1,instance_of,VV1), R1!=pos, negative_part2(V1), negative_part1(T), nCopVerb(V1), conn(C), type8_fwd_conn(C).
+
+type8(positive,T,positive,V1,VV1,R1,X) :- has_part1(V1,R1,X1), has_part2(T,is_trait_of,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), R1!=pos, positive_part1(V1), positive_part2(T), nCopVerb(V1), conn(C), type8_bwd_conn(C).
+
+type8(positive,T,negative,V1,VV1,R1,X) :- has_part1(V1,R1,X1), has_part2(T,is_trait_of,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), R1!=pos, negative_part1(V1), positive_part2(T), nCopVerb(V1), conn(C), type8_bwd_conn(C).
+
+type8(negative,T,positive,V1,VV1,R1,X) :- has_part1(V1,R1,X1), has_part2(T,is_trait_of,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), R1!=pos, positive_part1(V1), negative_part2(T), nCopVerb(V1), conn(C), type8_bwd_conn(C).
+
+type8(negative,T,negative,V1,VV1,R1,X) :- has_part1(V1,R1,X1), has_part2(T,is_trait_of,X2), has_part1(X1,instance_of,X), has_part2(X2,instance_of,X), has_part1(V1,instance_of,VV1), R1!=pos, negative_part1(V1), negative_part2(T), nCopVerb(V1), conn(C), type8_bwd_conn(C).
 
 % Rules for type 9 Knowledge extraction
 % Co-existing properties and actions.

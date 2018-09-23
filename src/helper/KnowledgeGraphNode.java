@@ -1,5 +1,6 @@
 package helper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -7,8 +8,12 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-public class KnowledgeGraphNode {
+public class KnowledgeGraphNode implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3919127785487890770L;
 	@Getter (AccessLevel.PUBLIC) @Setter (AccessLevel.PUBLIC) private String value;
 	@Getter (AccessLevel.PUBLIC) @Setter (AccessLevel.PUBLIC) private String lemma;
 	@Getter (AccessLevel.PUBLIC) @Setter (AccessLevel.PUBLIC) private String superclass;

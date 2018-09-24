@@ -1,8 +1,14 @@
 package methods;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import de.jollyday.config.Configuration;
 import kparser.devel.Utilities;
+import utils.Configurations;
 import utils.LocalKparser;
 import utils.TextPreprocessor;
 import module.graph.helper.GraphPassingNode;
@@ -28,16 +34,50 @@ public class SentenceParser {
 	
 	public static void main(String[] args) {
 		SentenceParser sp = new SentenceParser();
-		String text = "Williams was reluctant to repeat what she had said to the official";
-		text = args[0];
-		GraphPassingNode gpn = sp.parse(text);
-//		System.out.println(gpn.getSentence());
-//		for(String s : gpn.getAspGraph()){
-//			System.out.println(s);
-//		}
+		String dirPath = Configurations.getProperty("kparserdatadir");
+		String outdirPath = Configurations.getProperty("kparseroutdatadir");
+		File dir = new File(dirPath);
+		ArrayList<String> fileNames = Utilities.listFilesForFolder(dir, false);
 		
-		Utilities.saveObject(gpn, "gpn_example1.ser");
-		System.out.println("objectSaved");
+		
+		for(String fileName : fileNames){
+			ArrayList<GraphPassingNode> listOfParses = new ArrayList<GraphPassingNode>();
+			try(BufferedReader br = new BufferedReader(new FileReader(dirPath+fileName))){
+				String line = null;
+				int lineNum = 1;
+				while((line=br.readLine())!=null){
+					if(line.trim().equals("")){
+						continue;
+					}
+					try{
+						GraphPassingNode parse = sp.parse(line);
+						listOfParses.add(parse);
+						if(lineNum%2000==0){
+							Utilities.saveObject(listOfParses, outdirPath+lineNum);
+							listOfParses.clear();
+						}
+						lineNum++;
+						System.out.println(lineNum);
+					}catch(Exception e){
+						System.out.println("Error Encountered!");
+						if(listOfParses.size()>0){
+							Utilities.saveObject(listOfParses, outdirPath+lineNum);
+							listOfParses.clear();
+						}
+						lineNum++;
+					}					
+				}
+				if(listOfParses.size()>0){
+					System.out.println("Final");
+					Utilities.saveObject(listOfParses, outdirPath+lineNum);
+				}
+			}catch(Exception e){
+				System.out.println("Error Encountered!");
+			}
+		}
+		
+		
+		
 	}
 	
 	public GraphPassingNode parse(String inputText){

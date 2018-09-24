@@ -29,13 +29,14 @@ public class SentenceParser {
 	public static void main(String[] args) {
 		SentenceParser sp = new SentenceParser();
 		String text = "Williams was reluctant to repeat what she had said to the official";
+		text = args[0];
 		GraphPassingNode gpn = sp.parse(text);
 //		System.out.println(gpn.getSentence());
 //		for(String s : gpn.getAspGraph()){
 //			System.out.println(s);
 //		}
 		
-		Utilities.saveObject(gpn, "gpn_example.ser");
+		Utilities.saveObject(gpn, "gpn_example1.ser");
 		System.out.println("objectSaved");
 	}
 	

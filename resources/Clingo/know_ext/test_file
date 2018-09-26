@@ -1,0 +1,35 @@
+% Sentence: rain started and continued
+
+has_part1(started_2,instance_of,start).
+has_part1(started_2,recipient,rain_1).
+has_part1(rain,instance_of,rain).
+has_part1(started_2,pos,v).
+has_part1(start,pos,v).
+
+
+has_part2(continued_4,instance_of,continue).
+has_part2(continued_4,recipient,rain_1).
+has_part2(continued_4,pos,v).
+has_part2(continue,pos,v).
+
+conn(and).
+
+%jap("こんにちは").
+
+%happy(X) :- jap(X).
+
+%type6(positive,V1,VV1,R1,X,C,positive,V2,VV2,R2,X) :- 
+
+%has_part1(V1,R1,X), 
+%has_part2(V2,R2,X), 
+%has_part1(V1,instance_of,VV1), 
+%has_part2(V2,instance_of,VV2), 
+%R1!=pos, R2!=pos, 
+%positive_part1(V1), 
+%positive_part2(V2), 
+%nCopVerb(V1), 
+%nCopVerb(V2), 
+
+
+%conn(C), 
+%followed_fwd(C).

@@ -32,19 +32,18 @@ public class SentenceParser {
 		preprocessor = TextPreprocessor.getInstance();
 	}
 	
-	public static void main(String[] args) {
+	public void runOnServer(){
 		SentenceParser sp = new SentenceParser();
 		String dirPath = Configurations.getProperty("kparserdatadir");
 		String outdirPath = Configurations.getProperty("kparseroutdatadir");
 		File dir = new File(dirPath);
 		ArrayList<String> fileNames = Utilities.listFilesForFolder(dir, false);
 		
-		
+		int sentIndx = 1;
 		for(String fileName : fileNames){
 			ArrayList<GraphPassingNode> listOfParses = new ArrayList<GraphPassingNode>();
 			try(BufferedReader br = new BufferedReader(new FileReader(dirPath+fileName))){
 				String line = null;
-				int lineNum = 1;
 				while((line=br.readLine())!=null){
 					if(line.trim().equals("")){
 						continue;
@@ -52,28 +51,38 @@ public class SentenceParser {
 					try{
 						GraphPassingNode parse = sp.parse(line);
 						listOfParses.add(parse);
-						if(lineNum%2000==0){
-							Utilities.saveObject(listOfParses, outdirPath+lineNum);
+						if(sentIndx%2000==0){
+							Utilities.saveObject(listOfParses, outdirPath+sentIndx);
 							listOfParses.clear();
 						}
-						lineNum++;
-						System.out.println(lineNum);
+						sentIndx++;
+						System.out.println(sentIndx);
 					}catch(Exception e){
 						System.out.println("Error Encountered!");
 						if(listOfParses.size()>0){
-							Utilities.saveObject(listOfParses, outdirPath+lineNum);
+							Utilities.saveObject(listOfParses, outdirPath+sentIndx);
 							listOfParses.clear();
 						}
-						lineNum++;
+						sentIndx++;
 					}					
 				}
 				if(listOfParses.size()>0){
 					System.out.println("Final");
-					Utilities.saveObject(listOfParses, outdirPath+lineNum);
+					Utilities.saveObject(listOfParses, outdirPath+sentIndx);
 				}
 			}catch(Exception e){
 				System.out.println("Error Encountered!");
 			}
+		}
+	}
+	
+	public static void main(String[] args) {
+		SentenceParser sp = new SentenceParser();
+		String sentence = "John lifted Tom because Tom was not heavy.";
+		
+		GraphPassingNode gpn = sp.parse(sentence);
+		for(String s : gpn.getAspGraph()){
+			System.out.println(s);
 		}
 		
 		

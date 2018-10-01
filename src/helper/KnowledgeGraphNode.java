@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.json.simple.JSONObject;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,6 +44,24 @@ public class KnowledgeGraphNode implements Serializable{
 		return result;
 	}
 	
+	public JSONObject getJSONObject(){
+		return traverseANode(this);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private JSONObject traverseANode(KnowledgeGraphNode node){
+		JSONObject obj = new JSONObject();
+		obj.put("value", node.getSuperclass());
+		ArrayList<String> edges = node.getEdges();
+		ArrayList<KnowledgeGraphNode> children = node.getChildren();
+		if(edges!=null){
+			for(int i=0;i<edges.size();i++){
+				KnowledgeGraphNode child = children.get(i);
+				obj.put(edges.get(i),traverseANode(child));
+			}
+		}
+		return obj;
+	}
 	
 	
 	@Override

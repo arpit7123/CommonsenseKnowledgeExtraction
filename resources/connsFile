@@ -1,16 +1,67 @@
+# old relations
 ,
 \.
-then
-because
-so
-and
-in order to
-after
+#then
 but
+#that
+#when
+#to
+#even though
+#;
+#although
+#
+# forward causal phrases from CausalNet paper
+lead to
+leads to
+led to
+leading to
+give rise to
+gave rise to
+given rise to
+giving rise to
+induce
+inducing
+induced
+induces
+cause
+causes
+causing
+caused
+bring on
+brings on
+brought on
+bringing on
+comma thus
+comma therefore
+and hence
+comma hence
+comma consequently
+and consequently
+comma for this reason alone
+so
+in order to
 that
 when
 to
-even though
-;
-although
 until
+#
+# backward causal phrases from CausalNet paper
+caused by
+result from
+resulting from
+results from
+resulted from
+comma because
+because
+because of
+comma inasmuch as
+due to
+in consequence of
+owing to
+as a result of
+as a consequence of
+#
+# followed by phrases
+and
+before
+after

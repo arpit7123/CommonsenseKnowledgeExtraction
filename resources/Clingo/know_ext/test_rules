@@ -1,63 +1,44 @@
-%27 forward causal relations + 6 new (at the end)
+%27 forward causal relations (from CausalNet paper) + 6 new (at the end)
 causal_fwd(lead_to;leads_to;led_to;leading_to;give_rise_to;gave_rise_to;given_rise_to;giving_rise_to;induce;inducing;induced;induces;cause;causes;causing;caused;bring_on;brings_on;brought_on;bringing_on;comma_thus;comma_therefore;and_hence;comma_hence;comma_consequently;and_consequently;comma_for_this_reason_alone;so;in_order_to;that;when;to;until).
 
-%14 backward causal relations
+%14 backward causal (from CausalNet paper) relations
 causal_bwd(caused_by;result_from;resulting_from;results_from;resulted_from;comma_because;because;because_of;comma_inasmuch_as;due_to;in_consequence_of;owing_to;as_a_result_of;as_a_consequence_of).
-
 
 % followed by relations
 followed_fwd(and;before).
 followed_bwd(after).
 
-%
-%type1_fwd_conn(so;semi_colon).
-%type1_inv_conn(because;even_though;although).
-
-%type2_conn(because;so;in_order_to;that;when;to).
 type2_conn(X) :- causal_fwd(X).
 type2_conn(X) :- causal_bwd(X).
 
-%type3_fwd_conn(so;comma;semi_colon;stop).
-%type3_inv_conn(because).
+copular_verb("be";"have").
 
-%type4_fwd_conn(so;until).%comma
-%type4_inv_conn(because;after).
+copularVerb(V) :- has_part1(V,"instance_of",COP), has_part1(V,"pos","V"), copular_verb(COP).
+copularVerb(V) :- has_part2(V,"instance_of",COP), has_part2(V,"pos","V"), copular_verb(COP).
+nCopVerb(V) :- not copularVerb(V), has_part1(V,"instance_of",C), has_part1(V,"pos","V").%, C!=COP, copular_verb(COP).
+nCopVerb(V) :- not copularVerb(V), has_part2(V,"instance_of",C), has_part2(V,"pos","V").%, C!=COP, copular_verb(COP).
 
-%type6_fwd_conn(and;but).
-%type6_bwd_conn(after).
+negative_part1(A) :- has_part1(A,"negative",N).
+negative_part2(B) :- has_part2(B,"negative",N).
+positive_part1(A) :- not negative_part1(A),has_part1(A,"instance_of",AA).
+positive_part2(B) :- not negative_part2(B),has_part2(B,"instance_of",BB).
 
-type7_fwd_conn(and;but).
-type7_bwd_conn(after).
+type9_1(positive,V1,VV1,R1,positive,T) :- has_part1(V1,R1,X1), has_part1(V1,"instance_of",VV1), positive_part1(V1), R1!="pos", nCopVerb(V1), has_part1(X2,"trait",T), positive_part1(T), has_part1(X1,"instance_of",XX), has_part1(X2,"instance_of",XX).
 
-type8_fwd_conn(and;but).
-type8_bwd_conn(after).
+%nCopVerb("said-9") nCopVerb("repeat-5") positive_part1("official-12") positive_part1("Williams-1") positive_part1("said-9") positive_part1("had-8") positive_part1("repeat-5") positive_part1("was-2") positive_part1("what-6") positive_part1("reluctant-3")
 
-type9_1_conn(but;stop).
-
-type10_fwd_conn(so).
-type10_bwd_conn(because).
-
-
-copular_verb(be;have).
-
-copularVerb(V) :- has_part1(V,instance_of,COP), has_part1(V,pos,v), copular_verb(COP).
-copularVerb(V) :- has_part2(V,instance_of,COP), has_part2(V,pos,v), copular_verb(COP).
-nCopVerb(V) :- not copularVerb(V), has_part1(V,instance_of,C), has_part1(V,pos,v).%, C!=COP, copular_verb(COP).
-nCopVerb(V) :- not copularVerb(V), has_part2(V,instance_of,C), has_part2(V,pos,v).%, C!=COP, copular_verb(COP).
-
-negative_part1(A) :- has_part1(A,negative,N).
-negative_part2(B) :- has_part2(B,negative,N).
-positive_part1(A) :- not negative_part1(A),has_part1(A,instance_of,AA).
-positive_part2(B) :- not negative_part2(B),has_part2(B,instance_of,BB).
-
-
-
-
-type6(positive,V1,VV1,R1,X,C,positive,V2,VV2,R2,X) :- has_part1(V1,R1,X1), has_part2(V2,R2,X2), (has_part1(X1,instance_of,X) & has_part2(X2,instance_of,X))|(X1=X2) , has_part1(V1,instance_of,VV1), has_part2(V2,instance_of,VV2), R1!=pos, R2!=pos, positive_part1(V1), positive_part2(V2), nCopVerb(V1), nCopVerb(V2), conn(C), followed_fwd(C).
-
-
-#show type6/11.
-
-
-
-
+%#hide.
+%#show type2/11.
+%#show type1/5.
+%#show type3/5.
+%#show type4/6.
+%#show type5/10.
+%#show type6/11.
+#show type9_1/6.
+%#show type9_2/11.
+%#show type9_3/4.
+%#show type10/4.
+%#show type4_1/10.
+%#show type4Other1/10.
+#show nCopVerb/1.
+#show positive_part1/1.

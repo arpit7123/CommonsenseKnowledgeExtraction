@@ -87,31 +87,31 @@ public class TextPreprocessor {
 				conn = " "+conn+" ";
 			}
 			String[] partsOfSent = sent.split(conn);
-			if(partsOfSent.length > 1){				
-				for(int i=0;i<partsOfSent.length-1;++i){
-					DiscourseInfo discInfo = new DiscourseInfo();
-					if(conn.equals(" \\. ")){
-						conn = ".";
-					}
-					discInfo.setConn(conn.trim());
-					String tmpLeft = Joiner.on(conn).join(Arrays.copyOfRange(partsOfSent, 0, i+1));
-					if(tmpLeft.trim().equals("")){
-						continue;
-					}
-					discInfo.setLeftArg(tmpLeft);
-					String tmpRight = Joiner.on(conn).join(Arrays.copyOfRange(partsOfSent, i+1, partsOfSent.length));
-					if(tmpRight.trim().equals("")){
-						continue;
-					}
-					discInfo.setRightArg(tmpRight);
-					discInfoList.add(discInfo);
+//			if(partsOfSent.length > 1){				
+			for(int i=0;i<partsOfSent.length-1;++i){
+				DiscourseInfo discInfo = new DiscourseInfo();
+				if(conn.equals(" \\. ")){
+					conn = ".";
 				}
+				discInfo.setConn(conn.trim());
+				String tmpLeft = Joiner.on(conn).join(Arrays.copyOfRange(partsOfSent, 0, i+1));
+				if(tmpLeft.trim().equals("")){
+					continue;
+				}
+				discInfo.setLeftArg(tmpLeft);
+				String tmpRight = Joiner.on(conn).join(Arrays.copyOfRange(partsOfSent, i+1, partsOfSent.length));
+				if(tmpRight.trim().equals("")){
+					continue;
+				}
+				discInfo.setRightArg(tmpRight);
+				discInfoList.add(discInfo);
+			}
 				//				for(int i = 1; i<=partsOfSent.length-1;++i){
 				//					discInfo.setLeftArg(Joiner.on(" ").join(Arrays.copyOfRange(partsOfSent, 0, i)));
 				//					discInfo.setRightArg(Joiner.on(" ").join(Arrays.copyOfRange(partsOfSent, i+1, partsOfSent.length)));
 				//					discInfoList.add(discInfo);
 				//				}
-			}
+//			}
 			//			Pattern regExPat = Pattern.compile("(\\b[I|i]f\\b)?(.*)("+ conn +")(.*)");
 			//			Matcher m = regExPat.matcher(sent);
 			//			if(m.matches()){
@@ -536,7 +536,7 @@ public class TextPreprocessor {
 		return inputText;
 	}
 
-	@SuppressWarnings("unused")
+//	@SuppressWarnings("unused")
 	public static void main(String[] args) throws Exception{
 		TextPreprocessor prep = new TextPreprocessor();
 		//		String s = "If something happened then we will take it.";
@@ -568,13 +568,23 @@ public class TextPreprocessor {
 //			}
 //		}
 		
-		String sent = "She could not lift it off the floor because she is a weak girl.";
-		LocalKparser stg = new LocalKparser();
-		GraphPassingNode gpn = stg.extractGraph(sent, false, true);
-		for(String s : gpn.getAspGraph()){
-			System.out.println(s);
+		String sent = "She could not lift it off the floor because she is a weak girl";
+//		LocalKparser stg = new LocalKparser();
+//		GraphPassingNode gpn = stg.extractGraph(sent, false, true);
+//		for(String s : gpn.getAspGraph()){
+//			System.out.println(s);
+//		}
+		
+		ArrayList<DiscourseInfo> discInfoList = prep.divideUsingDiscConn(sent);
+		for(DiscourseInfo di : discInfoList){
+			System.out.println(di.toString());
 		}
 		
+		for(int i=0;i<-1;i++){
+			System.out.println(i);
+		}
+		
+		System.out.println("NO");
 		
 		//		Pattern regExPat = Pattern.compile("(\\b[I|i]f\\b)?(.*)("+ "because" +")(.*)");
 		//		Matcher m = regExPat.matcher(s);
@@ -596,7 +606,9 @@ public class TextPreprocessor {
 		try(BufferedReader br = new BufferedReader(new FileReader(connsFile))){
 			String line = null;
 			while((line=br.readLine())!=null){
-				connsList.add(line);
+				if(!line.startsWith("#")){
+					connsList.add(line);					
+				}
 			}
 		}catch(IOException e){
 			System.err.println("Error in reading the conns file for knowledge extraction!");
@@ -608,7 +620,7 @@ public class TextPreprocessor {
 		try(BufferedReader br = new BufferedReader(new FileReader(genderFile))){
 			String line = null;
 			while((line=br.readLine())!=null){
-				if(!line.startsWith("//")){
+				if(!line.startsWith("#")){
 					String[] tmpStr = line.split("\t");
 					if(tmpStr.length==2){
 						genderMap.put(tmpStr[0], tmpStr[1]);

@@ -5,5 +5,8 @@
 	<classpathentry kind="lib" path="/home/arpit/workspace/WinogradPhd/WebContent/WEB-INF/lib/lombok.jar"/>
 	<classpathentry kind="lib" path="/home/arpit/workspace/WinogradPhd/WebContent/WEB-INF/lib/kparser.jar"/>
 	<classpathentry kind="lib" path="/home/arpit/workspace/WinogradPhd/WebContent/WEB-INF/lib/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/home/arpit/workspace/CommonsenseKnowledgeExtraction/resources/mongodb-driver-3.8.2.jar"/>
+	<classpathentry kind="lib" path="/home/arpit/workspace/CommonsenseKnowledgeExtraction/resources/mongodb-driver-core-3.8.2.jar"/>
+	<classpathentry kind="lib" path="/home/arpit/workspace/CommonsenseKnowledgeExtraction/resources/bson-3.8.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

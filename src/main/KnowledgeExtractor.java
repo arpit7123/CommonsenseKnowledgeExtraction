@@ -67,6 +67,7 @@ public class KnowledgeExtractor {
 					System.out.println(k);
 				}
 				System.out.println("******************************");
+				System.out.println(kIs.getRoot().getJSONObject().toJSONString());
 			}
 		}
 		System.exit(0);

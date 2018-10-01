@@ -99,6 +99,10 @@ public class ASPBasedExtractor {
 		ArrayList<KnowledgeObject> result = null;
 		ArrayList<String> kInstances = getKnowledge(inputText,gpn,discInfoList);
 		
+//		for(String kInst : kInstances){
+//			System.out.println(kInst);
+//		}
+		
 		int i = 0;
 		if(kInstances!=null){
 			for(String kInstance : kInstances){
@@ -156,7 +160,8 @@ public class ASPBasedExtractor {
 		}
 		for(DiscourseInfo discInfo : discInfoList){
 			if((discInfo)!=null){
-				aspPreparer.prepareASPFile(discInfo, subgraphs, tempFileName, sameGenderRefs,gpn);
+//				System.out.println(discInfo.getConn());
+				aspPreparer.prepareASPFile(discInfo,subgraphs,tempFileName,sameGenderRefs,gpn);
 				ArrayList<String> listOfFiles = Lists.newArrayList();
 				listOfFiles.add(tempFileName);
 				listOfFiles.add(aspRulesFileName);

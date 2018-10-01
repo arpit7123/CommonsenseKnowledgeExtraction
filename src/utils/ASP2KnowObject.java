@@ -114,16 +114,103 @@ public class ASP2KnowObject {
 		}
 		return null;
 	}
-
-
+	
 	public KnowledgeObject processASPIntoGraph(String aspFormatKnow, HashMap<String,Node> mapOfPrunedRoots){
 		KnowledgeObject knowledge = null;
 		String knowPrefix = aspFormatKnow.substring(0, aspFormatKnow.indexOf("("));
 		String knowCore = aspFormatKnow.substring(aspFormatKnow.indexOf("(")+1,aspFormatKnow.length()-1);
 		String[] tmp = knowCore.split(",");
+		
+		for(int i=0;i<tmp.length;i++){
+			if(tmp[i].startsWith("\"") && tmp[i].endsWith("\"")){
+				tmp[i] = tmp[i].substring(1, tmp[i].length()-1);
+			}
+		}
+		
 		switch (knowPrefix){
 
-		case "type1": // an action causes another action
+		case "type1": // a property prevents an action
+			if(tmp.length==5){
+				String type = "prop prevents action";
+				String trait = tmp[1];
+				String traitLemma = trait;
+				if(trait.matches("(.*)(-)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("-"));
+				}
+				if(trait.matches("(.*)(_)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("_"));
+				}
+				
+				boolean traitPolarity = false;
+				if(tmp[0].equals("positive")){
+					traitPolarity = true;
+				}
+
+				String event = tmp[2];
+				String eventLemma = tmp[3];
+				String eventRel = tmp[4];
+
+				knowledge = new KnowledgeObject();
+				knowledge.setType(type);
+
+				KnowledgeGraphNode root = new KnowledgeGraphNode();
+				root.setValue(trait);
+				root.setLemma(traitLemma);
+				root.setSuperclass(traitLemma);
+				root.setPostag("j");
+				ArrayList<String> edges = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children = new ArrayList<KnowledgeGraphNode>();
+				if(!traitPolarity){
+					edges.add("negative");
+					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
+					ch1.setValue("n1");
+					ch1.setLemma("nt");
+					ch1.setSuperclass("nt");
+					ch1.setPostag("rb");
+					children.add(ch1);
+				}
+
+				edges.add("is_trait_of");
+				KnowledgeGraphNode ch2 = new KnowledgeGraphNode();
+				ch2.setValue("x");
+				//				ch2.setLemma("");
+				ch2.setSuperclass("entity");
+				ch2.setPostag("nn");
+				children.add(ch2);
+				
+				root.setEdges(edges);
+				root.setChildren(children);
+				
+				edges.add("prevents");
+				KnowledgeGraphNode ch3 = new KnowledgeGraphNode();
+				ch3.setValue(event);
+				ch3.setLemma(eventLemma);
+				ch3.setSuperclass(eventLemma);
+				ch3.setPostag("vb");
+				children.add(ch3);
+				
+				ArrayList<String> edges2 = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children2 = new ArrayList<KnowledgeGraphNode>();
+
+				edges2.add(eventRel);
+				KnowledgeGraphNode ch22 = new KnowledgeGraphNode();
+				ch22.setValue("x");
+				//				ch22.setLemma("");
+				ch22.setSuperclass("entity");
+				ch22.setPostag("nn");
+				children2.add(ch22);
+
+				ch3.setEdges(edges2);
+				ch3.setChildren(children2);
+				
+				knowledge.setRoot(root);
+			}else{
+				System.err.println("Error in processing Knowledge Type 2: " + aspFormatKnow);
+			}
+
+			break;
+			
+		case "type2": // an action causes another action
 			if(tmp.length==11){
 				String evnt1 = null;
 				String evnt1Lemma = null;
@@ -135,7 +222,7 @@ public class ASP2KnowObject {
 				String evnt2Rel = null;
 				boolean evnt2Polarity = false;
 
-				String type = "one";
+				String type = "action causes action";
 
 				if(tmp[0].equals("positive") && tmp[6].equals("positive")){
 					String conn_polarity = getConnPolarity(tmp[5]);
@@ -174,7 +261,7 @@ public class ASP2KnowObject {
 						evnt2Rel = tmp[3];
 
 					}else{
-						type = "five";
+						type = "action prevents action";
 						evnt1Polarity = true;
 						evnt1 = tmp[1];
 						evnt1Lemma = tmp[2];
@@ -187,7 +274,7 @@ public class ASP2KnowObject {
 					}
 				}else if(!tmp[0].equals("positive") && tmp[6].equals("positive")){
 					if(getConnPolarity(tmp[5]).equals("reverse")){
-						type = "five";
+						type = "action prevents action";
 						evnt1Polarity = true;
 						evnt1 = tmp[7];
 						evnt1Lemma = tmp[8];
@@ -208,7 +295,7 @@ public class ASP2KnowObject {
 						evnt2Rel = tmp[9];
 					}		
 				}else {
-					type = "five";
+					type = "action prevents action";
 					if(getConnPolarity(tmp[5]).equals("reverse")){
 						evnt1 = tmp[7];
 						evnt1Lemma = tmp[8];
@@ -302,85 +389,17 @@ public class ASP2KnowObject {
 			}
 			break;
 
-		case "type2": // a property prevents an action
-			if(tmp.length==5){
-				String type = "two";
-				String trait = tmp[1];
-				String traitLemma = trait.substring(0, trait.lastIndexOf("_"));
-				boolean traitPolarity = false;
-				if(tmp[0].equals("positive")){
-					traitPolarity = true;
-				}
-
-				String event = tmp[2];
-				String eventLemma = tmp[3];
-				String eventRel = tmp[4];
-
-				knowledge = new KnowledgeObject();
-				knowledge.setType(type);
-
-				KnowledgeGraphNode root = new KnowledgeGraphNode();
-				root.setValue(trait);
-				root.setLemma(traitLemma);
-				root.setSuperclass(traitLemma);
-				root.setPostag("j");
-				ArrayList<String> edges = new ArrayList<String>();
-				ArrayList<KnowledgeGraphNode> children = new ArrayList<KnowledgeGraphNode>();
-				if(!traitPolarity){
-					edges.add("negative");
-					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
-					ch1.setValue("n1");
-					ch1.setLemma("nt");
-					ch1.setSuperclass("nt");
-					ch1.setPostag("rb");
-					children.add(ch1);
-				}
-
-				edges.add("is_trait_of");
-				KnowledgeGraphNode ch2 = new KnowledgeGraphNode();
-				ch2.setValue("x");
-				//				ch2.setLemma("");
-				ch2.setSuperclass("entity");
-				ch2.setPostag("nn");
-				children.add(ch2);
-				
-				root.setEdges(edges);
-				root.setChildren(children);
-				
-				edges.add("prevents");
-				KnowledgeGraphNode ch3 = new KnowledgeGraphNode();
-				ch3.setValue(event);
-				ch3.setLemma(eventLemma);
-				ch3.setSuperclass(eventLemma);
-				ch3.setPostag("vb");
-				children.add(ch3);
-				
-				ArrayList<String> edges2 = new ArrayList<String>();
-				ArrayList<KnowledgeGraphNode> children2 = new ArrayList<KnowledgeGraphNode>();
-
-				edges2.add(eventRel);
-				KnowledgeGraphNode ch22 = new KnowledgeGraphNode();
-				ch22.setValue("x");
-				//				ch22.setLemma("");
-				ch22.setSuperclass("entity");
-				ch22.setPostag("nn");
-				children2.add(ch22);
-
-				ch3.setEdges(edges2);
-				ch3.setChildren(children2);
-				
-				knowledge.setRoot(root);
-			}else{
-				System.err.println("Error in processing Knowledge Type 2: " + aspFormatKnow);
-			}
-
-			break;
-
 		case "type3": // a property causes an action
 			if(tmp.length==5){
-				String type = "three";
+				String type = "prop causes action";
 				String trait = tmp[1];
-				String traitLemma = trait.substring(0, trait.lastIndexOf("_"));
+				String traitLemma = trait;
+				if(trait.matches("(.*)(-)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("-"));
+				}
+				if(trait.matches("(.*)(_)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("_"));
+				}
 				boolean traitPolarity = false;
 				if(tmp[0].equals("positive")){
 					traitPolarity = true;
@@ -451,15 +470,25 @@ public class ASP2KnowObject {
 			break;
 
 		case "type4": // an action causes a property
-			if(tmp.length==5){
-				String type = "four";
+			if(tmp.length==6){
+				String type = "action causes prop";
 				
-				String event = tmp[2];
-				String eventLemma = tmp[3];
-				String eventRel = tmp[4];
+				boolean eventPolarity = false;
+				if(tmp[2].equals("positive")){
+					eventPolarity = true;
+				}
+				String event = tmp[3];
+				String eventLemma = tmp[4];
+				String eventRel = tmp[5];
 
 				String trait = tmp[1];
-				String traitLemma = trait.substring(0, trait.lastIndexOf("_"));
+				String traitLemma = trait;
+				if(trait.matches("(.*)(-)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("-"));
+				}
+				if(trait.matches("(.*)(_)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("_"));
+				}
 				boolean traitPolarity = false;
 				if(tmp[0].equals("positive")){
 					traitPolarity = true;
@@ -482,6 +511,16 @@ public class ASP2KnowObject {
 				ch22.setSuperclass("entity");
 				ch22.setPostag("nn");
 				children.add(ch22);
+				
+				if(!eventPolarity){
+					edges.add("negative");
+					KnowledgeGraphNode ch1neg = new KnowledgeGraphNode();
+					ch1neg.setValue("n1");
+					ch1neg.setLemma("nt");
+					ch1neg.setSuperclass("nt");
+					ch1neg.setPostag("r");
+					children.add(ch1neg);
+				}
 				
 				root.setEdges(edges);
 				root.setChildren(children);
@@ -506,9 +545,9 @@ public class ASP2KnowObject {
 				children2.add(ch2);
 				
 				if(!traitPolarity){
-					edges.add("negative");
+					edges2.add("negative");
 					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
-					ch1.setValue("n1");
+					ch1.setValue("n2");
 					ch1.setLemma("nt");
 					ch1.setSuperclass("nt");
 					ch1.setPostag("rb");
@@ -530,7 +569,7 @@ public class ASP2KnowObject {
 
 		case "type6": // an action is followed by another action
 			if(tmp.length==11){
-				String type = "six";
+				String type = "action followed by action";
 				String evnt1 = null;
 				String evnt1Lemma = null;
 				String evnt1Rel = null;
@@ -651,10 +690,300 @@ public class ASP2KnowObject {
 			}
 			break;
 
+		case "type7": // an action followed by a property
+			if(tmp.length==6){
+				String type = "action followed by prop";
+				
+				boolean eventPolarity = false;
+				if(tmp[0].equals("positive")){
+					eventPolarity = true;
+				}
+				String event = tmp[1];
+				String eventLemma = tmp[2];
+				String eventRel = tmp[3];
+
+				String trait = tmp[5];
+				String traitLemma = trait;
+				if(trait.matches("(.*)(-)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("-"));
+				}
+				if(trait.matches("(.*)(_)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("_"));
+				}
+				boolean traitPolarity = false;
+				if(tmp[4].equals("positive")){
+					traitPolarity = true;
+				}
+				
+				knowledge = new KnowledgeObject();
+				knowledge.setType(type);
+
+				KnowledgeGraphNode root = new KnowledgeGraphNode();
+				root.setValue(event);
+				root.setLemma(eventLemma);
+				root.setSuperclass(eventLemma);
+				root.setPostag("v");
+				ArrayList<String> edges = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children = new ArrayList<KnowledgeGraphNode>();
+				
+				if(!eventPolarity){
+					edges.add("negative");
+					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
+					ch1.setValue("n1");
+					ch1.setLemma("nt");
+					ch1.setSuperclass("nt");
+					ch1.setPostag("rb");
+					children.add(ch1);
+				}
+				
+				edges.add(eventRel);
+				KnowledgeGraphNode ch22 = new KnowledgeGraphNode();
+				ch22.setValue("x");
+				//				ch22.setLemma("");
+				ch22.setSuperclass("entity");
+				ch22.setPostag("n");
+				children.add(ch22);
+				
+				root.setEdges(edges);
+				root.setChildren(children);
+				
+				edges.add("followed_by");
+				KnowledgeGraphNode ch3 = new KnowledgeGraphNode();
+				ch3.setValue(trait);
+				ch3.setLemma(traitLemma);
+				ch3.setSuperclass(traitLemma);
+				ch3.setPostag("jj");
+				children.add(ch3);
+				
+				ArrayList<String> edges2 = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children2 = new ArrayList<KnowledgeGraphNode>();
+
+				edges2.add("is_trait_of");
+				KnowledgeGraphNode ch2 = new KnowledgeGraphNode();
+				ch2.setValue("x");
+				//				ch2.setLemma("");
+				ch2.setSuperclass("entity");
+				ch2.setPostag("nn");
+				children2.add(ch2);
+				
+				if(!traitPolarity){
+					edges2.add("negative");
+					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
+					ch1.setValue("n2");
+					ch1.setLemma("nt");
+					ch1.setSuperclass("nt");
+					ch1.setPostag("rb");
+					children2.add(ch1);
+				}
+
+				ch3.setEdges(edges2);
+				ch3.setChildren(children2);
+				
+				knowledge.setRoot(root);
+			}else{
+				System.err.println("Error in processing Knowledge Type 7: " + aspFormatKnow);
+			}
+
+			break;
+
+		case "type8": // a property followed by an action
+			if(tmp.length==6){
+				String type = "prop followed by action";
+				
+				boolean traitPolarity = false;
+				if(tmp[0].equals("positive")){
+					traitPolarity = true;
+				}
+				String trait = tmp[1];
+				String traitLemma = trait;
+				if(trait.matches("(.*)(-)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("-"));
+				}
+				if(trait.matches("(.*)(_)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("_"));
+				}
+				
+				boolean eventPolarity = false;
+				if(tmp[2].equals("positive")){
+					eventPolarity = true;
+				}
+				String event = tmp[3];
+				String eventLemma = tmp[4];
+				String eventRel = tmp[5];
+
+				
+				
+				knowledge = new KnowledgeObject();
+				knowledge.setType(type);
+
+				KnowledgeGraphNode root = new KnowledgeGraphNode();
+				root.setValue(trait);
+				root.setLemma(traitLemma);
+				root.setSuperclass(traitLemma);
+				root.setPostag("jj");
+				ArrayList<String> edges = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children = new ArrayList<KnowledgeGraphNode>();
+				
+				if(!traitPolarity){
+					edges.add("negative");
+					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
+					ch1.setValue("n1");
+					ch1.setLemma("nt");
+					ch1.setSuperclass("nt");
+					ch1.setPostag("rb");
+					children.add(ch1);
+				}
+				
+				edges.add("is_trait_of");
+				KnowledgeGraphNode ch2 = new KnowledgeGraphNode();
+				ch2.setValue("x");
+				//				ch2.setLemma("");
+				ch2.setSuperclass("entity");
+				ch2.setPostag("nn");
+				children.add(ch2);
+				
+				root.setEdges(edges);
+				root.setChildren(children);
+				
+				edges.add("followed_by");
+				KnowledgeGraphNode ch3 = new KnowledgeGraphNode();
+				ch3.setValue(event);
+				ch3.setLemma(eventLemma);
+				ch3.setSuperclass(eventLemma);
+				ch3.setPostag("v");
+				children.add(ch3);
+				
+				ArrayList<String> edges3 = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children3 = new ArrayList<KnowledgeGraphNode>();
+				if(!eventPolarity){
+					edges3.add("negative");
+					KnowledgeGraphNode ch31 = new KnowledgeGraphNode();
+					ch31.setValue("n1");
+					ch31.setLemma("nt");
+					ch31.setSuperclass("nt");
+					ch31.setPostag("rb");
+					children3.add(ch31);
+				}
+				
+				edges3.add(eventRel);
+				KnowledgeGraphNode ch32 = new KnowledgeGraphNode();
+				ch32.setValue("x");
+				//				ch22.setLemma("");
+				ch32.setSuperclass("entity");
+				ch32.setPostag("n");
+				children3.add(ch32);
+				
+				ch3.setEdges(edges3);
+				ch3.setChildren(children3);
+				
+				root.setEdges(edges);
+				root.setChildren(children);
+				
+				knowledge.setRoot(root);
+			}else{
+				System.err.println("Error in processing Knowledge Type 8: " + aspFormatKnow);
+			}
+
+			break;
+
+			//			Below code covers the case when an action and a property occur together. In other words there is a correlation between an action and a property
+		case "type9_1": // an action and a property occur together
+			if(tmp.length==6){
+				String type = "action and prop";
+				String event = tmp[1];
+				String eventLemma = tmp[2];
+				String eventRel = tmp[3];
+				boolean eventPolarity = false;
+				if(tmp[0].equals("positive")){
+					eventPolarity = true;
+				}
+
+				String trait = tmp[5];
+				String traitLemma = trait;
+				if(trait.matches("(.*)(-)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("-"));
+				}
+				if(trait.matches("(.*)(_)([0-9]{1,7})")){	
+					traitLemma = trait.substring(0, trait.lastIndexOf("_"));
+				}
+				boolean traitPolarity = false;
+				if(tmp[4].equals("positive")){
+					traitPolarity = true;
+				}
+
+				knowledge = new KnowledgeObject();
+				knowledge.setType(type);
+
+				KnowledgeGraphNode root = new KnowledgeGraphNode();
+				root.setValue(event);
+				root.setLemma(eventLemma);
+				root.setSuperclass(eventLemma);
+				root.setPostag("vb");
+				ArrayList<String> edges = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children = new ArrayList<KnowledgeGraphNode>();
+				edges.add(eventRel);
+				KnowledgeGraphNode ch22 = new KnowledgeGraphNode();
+				ch22.setValue("x");
+				//				ch22.setLemma("");
+				ch22.setSuperclass("entity");
+				ch22.setPostag("nn");
+				children.add(ch22);
+
+				if(!eventPolarity){
+					edges.add("negative");
+					KnowledgeGraphNode ch21 = new KnowledgeGraphNode();
+					ch21.setValue("n1");
+					ch21.setLemma("nt");
+					ch21.setSuperclass("nt");
+					ch21.setPostag("rb");
+					children.add(ch21);
+				}
+
+				root.setEdges(edges);
+				root.setChildren(children);
+
+				edges.add("and");
+				KnowledgeGraphNode ch3 = new KnowledgeGraphNode();
+				ch3.setValue(trait);
+				ch3.setLemma(traitLemma);
+				ch3.setSuperclass(traitLemma);
+				ch3.setPostag("jj");
+				children.add(ch3);
+
+				ArrayList<String> edges2 = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children2 = new ArrayList<KnowledgeGraphNode>();
+
+				edges2.add("is_trait_of");
+				KnowledgeGraphNode ch2 = new KnowledgeGraphNode();
+				ch2.setValue("x");
+				//				ch2.setLemma("");
+				ch2.setSuperclass("entity");
+				ch2.setPostag("nn");
+				children2.add(ch2);
+
+				if(!traitPolarity){
+					edges2.add("negative");
+					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
+					ch1.setValue("n2");
+					ch1.setLemma("nt");
+					ch1.setSuperclass("nt");
+					ch1.setPostag("rb");
+					children2.add(ch1);
+				}
+
+				ch3.setEdges(edges2);
+				ch3.setChildren(children2);
+				
+				knowledge.setRoot(root);
+			}else{
+				System.err.println("Error in generating an object of Knowledge Type Event and Property: " + aspFormatKnow);
+			}
+			break;
+			
 			//		Below code covers the case when two actions occur together. In other words there is a correlation between two actions
 		case "type9_2": // two actions occur together
 			if(tmp.length==11){
-				String type = "9_ene";
+				String type = "action and action";
 				String evnt1 = null;
 				String evnt1Lemma = null;
 				String evnt1Rel = null;
@@ -775,91 +1104,202 @@ public class ASP2KnowObject {
 			}
 			break;
 
-			//			Below code covers the case when an action and a property occur together. In other words there is a correlation between an action and a property
-		case "type9_1": // an action and a property occur together
-			if(tmp.length==6){
-				String type = "9_enp";
-				String event = tmp[1];
-				String eventLemma = tmp[2];
-				String eventRel = tmp[3];
-				boolean eventPolarity = false;
+			//		Below code covers the case when two properties occur together. In other words there is a correlation between two actions
+		case "type9_3": // two properties occur together
+			if(tmp.length==4){
+				
+				String type = "prop and prop";
+				
+				boolean trait1Polarity = false;
 				if(tmp[0].equals("positive")){
-					eventPolarity = true;
+					trait1Polarity = true;
 				}
-
-				String trait = tmp[5];
-				String traitLemma = trait.substring(0, trait.lastIndexOf("_"));
-				boolean traitPolarity = false;
-				if(tmp[4].equals("positive")){
-					traitPolarity = true;
+				String trait1 = tmp[1];
+				String trait1Lemma = trait1;
+				if(trait1.matches("(.*)(-)([0-9]{1,7})")){	
+					trait1Lemma = trait1.substring(0, trait1.lastIndexOf("-"));
+				}
+				if(trait1.matches("(.*)(_)([0-9]{1,7})")){	
+					trait1Lemma = trait1.substring(0, trait1.lastIndexOf("_"));
+				}
+				
+				boolean trait2Polarity = false;
+				if(tmp[2].equals("positive")){
+					trait2Polarity = true;
+				}
+				String trait2 = tmp[3];
+				String trait2Lemma = trait2;
+				if(trait2.matches("(.*)(-)([0-9]{1,7})")){	
+					trait2Lemma = trait2.substring(0, trait2.lastIndexOf("-"));
+				}
+				if(trait2.matches("(.*)(_)([0-9]{1,7})")){	
+					trait2Lemma = trait2.substring(0, trait2.lastIndexOf("_"));
 				}
 
 				knowledge = new KnowledgeObject();
 				knowledge.setType(type);
 
 				KnowledgeGraphNode root = new KnowledgeGraphNode();
-				root.setValue(event);
-				root.setLemma(eventLemma);
-				root.setSuperclass(eventLemma);
-				root.setPostag("vb");
+				root.setValue(trait1);
+				root.setLemma(trait1Lemma);
+				root.setSuperclass(trait1Lemma);
+				root.setPostag("j");
 				ArrayList<String> edges = new ArrayList<String>();
 				ArrayList<KnowledgeGraphNode> children = new ArrayList<KnowledgeGraphNode>();
-				edges.add(eventRel);
-				KnowledgeGraphNode ch22 = new KnowledgeGraphNode();
-				ch22.setValue("x");
-				//				ch22.setLemma("");
-				ch22.setSuperclass("entity");
-				ch22.setPostag("nn");
-				children.add(ch22);
-
-				if(!eventPolarity){
+				if(!trait1Polarity){
 					edges.add("negative");
-					KnowledgeGraphNode ch21 = new KnowledgeGraphNode();
-					ch21.setValue("n1");
-					ch21.setLemma("nt");
-					ch21.setSuperclass("nt");
-					ch21.setPostag("rb");
-					children.add(ch21);
+					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
+					ch1.setValue("n1");
+					ch1.setLemma("nt");
+					ch1.setSuperclass("nt");
+					ch1.setPostag("rb");
+					children.add(ch1);
 				}
-
-				root.setEdges(edges);
-				root.setChildren(children);
-
-				edges.add("and");
-				KnowledgeGraphNode ch3 = new KnowledgeGraphNode();
-				ch3.setValue(trait);
-				ch3.setLemma(traitLemma);
-				ch3.setSuperclass(traitLemma);
-				ch3.setPostag("jj");
-				children.add(ch3);
-
-				ArrayList<String> edges2 = new ArrayList<String>();
-				ArrayList<KnowledgeGraphNode> children2 = new ArrayList<KnowledgeGraphNode>();
-
-				edges2.add("is_trait_of");
+				
+				edges.add("is_trait_of");
 				KnowledgeGraphNode ch2 = new KnowledgeGraphNode();
 				ch2.setValue("x");
 				//				ch2.setLemma("");
 				ch2.setSuperclass("entity");
-				ch2.setPostag("nn");
-				children2.add(ch2);
-
-				if(!traitPolarity){
-					edges2.add("negative");
-					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
-					ch1.setValue("n2");
-					ch1.setLemma("nt");
-					ch1.setSuperclass("nt");
-					ch1.setPostag("rb");
-					children2.add(ch1);
+				ch2.setPostag("n");
+				children.add(ch2);
+				
+				root.setEdges(edges);
+				root.setChildren(children);
+				
+				edges.add("and");
+				KnowledgeGraphNode ch3 = new KnowledgeGraphNode();
+				ch3.setValue(trait2);
+				ch3.setLemma(trait2Lemma);
+				ch3.setSuperclass(trait2Lemma);
+				ch3.setPostag("j");
+				children.add(ch3);
+				
+				ArrayList<String> edges3 = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children3 = new ArrayList<KnowledgeGraphNode>();
+				if(!trait2Polarity){
+					edges3.add("negative");
+					KnowledgeGraphNode ch31 = new KnowledgeGraphNode();
+					ch31.setValue("n2");
+					ch31.setLemma("nt");
+					ch31.setSuperclass("nt");
+					ch31.setPostag("r");
+					children3.add(ch31);
 				}
 
-				ch3.setEdges(edges2);
-				ch3.setChildren(children2);
+				edges3.add("is_trait_of");
+				KnowledgeGraphNode ch32 = new KnowledgeGraphNode();
+				ch32.setValue("x");
+				//				ch22.setLemma("");
+				ch32.setSuperclass("entity");
+				ch32.setPostag("n");
+				children3.add(ch32);
+
+				ch3.setEdges(edges3);
+				ch3.setChildren(children3);
 				
 				knowledge.setRoot(root);
 			}else{
-				System.err.println("Error in generating an object of Knowledge Type Event and Property: " + aspFormatKnow);
+				System.err.println("Error in processing Knowledge Type 9_pnp: " + aspFormatKnow);
+			}
+			break;
+
+		case "type10": // a property causes another property
+			if(tmp.length==4){
+				
+				String type = "prop causes prop";
+				
+				boolean trait1Polarity = false;
+				if(tmp[0].equals("positive")){
+					trait1Polarity = true;
+				}
+				String trait1 = tmp[1];
+				String trait1Lemma = trait1;
+				if(trait1.matches("(.*)(-)([0-9]{1,7})")){	
+					trait1Lemma = trait1.substring(0, trait1.lastIndexOf("-"));
+				}
+				if(trait1.matches("(.*)(_)([0-9]{1,7})")){	
+					trait1Lemma = trait1.substring(0, trait1.lastIndexOf("_"));
+				}
+				
+				boolean trait2Polarity = false;
+				if(tmp[2].equals("positive")){
+					trait2Polarity = true;
+				}
+				String trait2 = tmp[3];
+				String trait2Lemma = trait2;
+				if(trait2.matches("(.*)(-)([0-9]{1,7})")){	
+					trait2Lemma = trait2.substring(0, trait2.lastIndexOf("-"));
+				}
+				if(trait2.matches("(.*)(_)([0-9]{1,7})")){	
+					trait2Lemma = trait2.substring(0, trait2.lastIndexOf("_"));
+				}
+
+				knowledge = new KnowledgeObject();
+				knowledge.setType(type);
+
+				KnowledgeGraphNode root = new KnowledgeGraphNode();
+				root.setValue(trait1);
+				root.setLemma(trait1Lemma);
+				root.setSuperclass(trait1Lemma);
+				root.setPostag("j");
+				ArrayList<String> edges = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children = new ArrayList<KnowledgeGraphNode>();
+				if(!trait1Polarity){
+					edges.add("negative");
+					KnowledgeGraphNode ch1 = new KnowledgeGraphNode();
+					ch1.setValue("n1");
+					ch1.setLemma("nt");
+					ch1.setSuperclass("nt");
+					ch1.setPostag("rb");
+					children.add(ch1);
+				}
+				
+				edges.add("is_trait_of");
+				KnowledgeGraphNode ch2 = new KnowledgeGraphNode();
+				ch2.setValue("x");
+				//				ch2.setLemma("");
+				ch2.setSuperclass("entity");
+				ch2.setPostag("n");
+				children.add(ch2);
+				
+				root.setEdges(edges);
+				root.setChildren(children);
+				
+				edges.add("causes");
+				KnowledgeGraphNode ch3 = new KnowledgeGraphNode();
+				ch3.setValue(trait2);
+				ch3.setLemma(trait2Lemma);
+				ch3.setSuperclass(trait2Lemma);
+				ch3.setPostag("j");
+				children.add(ch3);
+				
+				ArrayList<String> edges3 = new ArrayList<String>();
+				ArrayList<KnowledgeGraphNode> children3 = new ArrayList<KnowledgeGraphNode>();
+				if(!trait2Polarity){
+					edges3.add("negative");
+					KnowledgeGraphNode ch31 = new KnowledgeGraphNode();
+					ch31.setValue("n2");
+					ch31.setLemma("nt");
+					ch31.setSuperclass("nt");
+					ch31.setPostag("r");
+					children3.add(ch31);
+				}
+
+				edges3.add("is_trait_of");
+				KnowledgeGraphNode ch32 = new KnowledgeGraphNode();
+				ch32.setValue("x");
+				//				ch22.setLemma("");
+				ch32.setSuperclass("entity");
+				ch32.setPostag("n");
+				children3.add(ch32);
+
+				ch3.setEdges(edges3);
+				ch3.setChildren(children3);
+				
+				knowledge.setRoot(root);
+			}else{
+				System.err.println("Error in processing Knowledge Type 10: " + aspFormatKnow);
 			}
 			break;
 		}
@@ -880,9 +1320,11 @@ public class ASP2KnowObject {
 		try(BufferedReader br = new BufferedReader(new FileReader(connsFileName))){
 			String line = null;
 			while((line=br.readLine())!=null){
-				String[] tmp = line.trim().split("\t");
-				if(tmp.length==2){
-					result.put(tmp[0], tmp[1]);
+				if(!line.startsWith("#")){
+					String[] tmp = line.trim().split("\t");
+					if(tmp.length==2){
+						result.put(tmp[0], tmp[1]);
+					}
 				}
 			}
 		}catch(IOException e){

@@ -71,59 +71,90 @@ public class ASPDataPreparer {
 					String arg1 = getNodeValue(tmpArr[0], mapOfLists);
 					String arg2 = getNodeValue(tmpArr[2], mapOfLists);
 					aspCodeLines.add("has_part1("+arg1+","+tmpArr[1]+","+arg2+").");
-//					aspCodeLines.add(s.replace("has(", "has_part1("));
 				}
 			}
 			aspCodeLines.add("initConn("+initConn+").");
 			aspCodeLines.add("conn("+conn+").");
 		}else{
-			if(initConn==null){
-				initConn = "null";
-			}
 			int threshIndx = leftArg.split(" ").length + conn.split(" ").length;
 			for(Node root : subgraphs){
 				String rootValue = root.getValue();
 				if(rootValue.matches("(.*)(-)([0-9]{1,7})")){
-					if(Integer.parseInt(rootValue.substring(rootValue.lastIndexOf("-")+1))>=threshIndx){
-						aspCodeLines.addAll(traverseSubevent("has_part2",root,mapOfLists));
+					Integer indx = isAnInteger(rootValue.substring(rootValue.lastIndexOf("-")+1));
+					if(indx >= threshIndx){
+						aspCodeLines.addAll(traverseSubevent("has_part2",root,mapOfLists,threshIndx));
 					}else{
-						aspCodeLines.addAll(traverseSubevent("has_part1",root,mapOfLists));
+						aspCodeLines.addAll(traverseSubevent("has_part1",root,mapOfLists,threshIndx));
 					}
 				}
 			}
-
 			aspCodeLines.add("initConn("+initConn+").");
 			aspCodeLines.add("conn("+getConnString(conn)+").");
 		}
-		
 		createTempFile(aspCodeLines);
 	}
 	
 	private String getConnString(String conn){
-		if(conn.equalsIgnoreCase(";")){
-			return "semi_colon";
-		}else if(conn.equalsIgnoreCase(".")){
-			return "stop";
-		}else if(conn.equalsIgnoreCase(",")){
-			return "comma";
-		}		
-		return conn;
+		String result = "";
+		String[] connWords = conn.split(" ");
+		for(String connWord : connWords){
+			if(connWord.equalsIgnoreCase(";")){
+				result += "semi_colon ";
+			}else if(connWord.equalsIgnoreCase(".")){
+				result += "stop ";
+			}else if(connWord.equalsIgnoreCase(",")){
+				result += "comma ";
+			}else{
+				result += connWord + " ";
+			}
+		}
+		return result;
 	}
 	
-	private ArrayList<String> traverseSubevent(String predicate, Node node, HashMap<String,ArrayList<String>> mapOfLists){
+	private ArrayList<String> traverseSubevent(String predicate, Node node, HashMap<String,ArrayList<String>> mapOfLists, Integer threshIndx){
 		ArrayList<String> result = new ArrayList<String>();
 		ArrayList<Node> children = node.getChildren();
 		ArrayList<String> edges = node.getEdgeList();
 		int indx = 0;
 		for(Node child : children){
-			result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+","+edges.get(indx)+","+getNodeValue(child.getValue(),mapOfLists)+").");
-			result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+",pos,"+node.getPOS().substring(0,1).toLowerCase()+").");
-			result.addAll(traverseSubevent(predicate, child, mapOfLists));
+			String childValue = child.getValue();
+			if(childValue.matches("(.*)(-)([0-9]{1,7})")){
+				Integer childIndx = isAnInteger(childValue.substring(childValue.lastIndexOf("-")+1));
+				if(childIndx!=null){
+					if(predicate.equals("has_part2") && childIndx >= threshIndx){
+						result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+","+edges.get(indx)+","+getNodeValue(child.getValue(),mapOfLists)+").");
+						result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+",pos,"+node.getPOS().substring(0,1).toLowerCase()+").");
+						result.addAll(traverseSubevent(predicate,child,mapOfLists,threshIndx));
+					}else if(predicate.equals("has_part1") && childIndx < threshIndx){
+						result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+","+edges.get(indx)+","+getNodeValue(child.getValue(),mapOfLists)+").");
+						result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+",pos,"+node.getPOS().substring(0,1).toLowerCase()+").");
+						result.addAll(traverseSubevent(predicate,child,mapOfLists,threshIndx));
+					} 
+				}else{
+					result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+","+edges.get(indx)+","+getNodeValue(child.getValue(),mapOfLists)+").");
+					result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+",pos,"+node.getPOS().substring(0,1).toLowerCase()+").");
+					result.addAll(traverseSubevent(predicate,child,mapOfLists,threshIndx));
+				}
+			}else{
+				result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+","+edges.get(indx)+","+getNodeValue(child.getValue(),mapOfLists)+").");
+				result.add(predicate + "(" + getNodeValue(node.getValue(),mapOfLists)+",pos,"+node.getPOS().substring(0,1).toLowerCase()+").");
+				result.addAll(traverseSubevent(predicate,child,mapOfLists,threshIndx));
+			}
 			indx++;
 		}		
 		return result;
 	}	
-	
+
+	public Integer isAnInteger(String str){  
+		Integer num = null;
+		try{  
+			num = Integer.parseInt(str);
+			return num;
+		}catch(NumberFormatException nfe){  
+			return null;  
+		}
+	}
+
 	private String getNodeValue(String value, HashMap<String,ArrayList<String>> mapOfLists){
 		for(String key : mapOfLists.keySet()){
 			ArrayList<String> list = mapOfLists.get(key);
@@ -140,17 +171,32 @@ public class ASPDataPreparer {
 	private void createTempFile(ArrayList<String> graphText){
 		try(BufferedWriter bw = new BufferedWriter(new FileWriter(this.tempFileName))){
 			for(String s : graphText){
-				s = s.replaceAll(" +", " ");
-				s = s.replaceAll(" ", "_");
-				s = s.replaceAll("-", "_");
-				s = s.replaceAll("\\$", "");
-				s = s.replaceAll("\\(not,", "\\(nt,");
-				s = s.replaceAll(",not\\)", ",nt\\)");
-				s = s.replaceAll("\\(100", "\\(one_hundred");
-				s = s.replaceAll(",100", ",one_hundred");
-				s = s.replaceAll("\\('s", "\\(s");
-				s = s.replaceAll("'s\\)", "s\\)");
-				bw.append(s.toLowerCase());
+				String pref = s.substring(0,s.indexOf("(")+1);
+				s = s.substring(s.indexOf("(")+1,s.length()-2);
+				
+				String[] tmpStr = s.split(",");
+				if(tmpStr.length==3){
+					s = "\"" + tmpStr[0] + "\",\"" + tmpStr[1] + "\",\"" + tmpStr[2] + "\"";
+				}else if(tmpStr.length==1){
+					s = "\"" + s + "\"";
+				}else{
+					continue;
+				}
+				
+				s = pref+s+").";
+				
+//				s = s.replaceAll(" +", " ");
+//				s = s.replaceAll(" ", "_");
+//				s = s.replaceAll("-", "_");
+//				s = s.replaceAll("\\$", "");
+//				s = s.replaceAll("\\(not,", "\\(nt,");
+//				s = s.replaceAll(",not\\)", ",nt\\)");
+//				s = s.replaceAll("\\(100", "\\(one_hundred");
+//				s = s.replaceAll(",100", ",one_hundred");
+//				s = s.replaceAll("\\('s", "\\(s");
+//				s = s.replaceAll("'s\\)", "s\\)");
+//				s = s.toLowerCase();
+				bw.append(s);
 				bw.newLine();
 			}
 		}catch(IOException e){

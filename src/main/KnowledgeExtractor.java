@@ -13,8 +13,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import utils.Configurations;
 import kparser.devel.Utilities;
 import methods.ASPBasedExtractor;
+import methods.KBOperations;
 import module.graph.helper.GraphPassingNode;
 
 
@@ -25,10 +27,15 @@ import module.graph.helper.GraphPassingNode;
  */
 public class KnowledgeExtractor {
 	
+	private String savedKparsesdirPath = null;
+	
 	private ASPBasedExtractor ke = null;
-
+	private KBOperations kbo = null;
+	
 	public KnowledgeExtractor(){
+		savedKparsesdirPath = Configurations.getProperty("kparseroutdatadir");
 		ke = new ASPBasedExtractor();
+		kbo = new KBOperations();
 	}
 	
 	public ArrayList<KnowledgeObject> extractKnowledge(String inputText, GraphPassingNode parse, ArrayList<DiscourseInfo> discInfoList) throws Exception{
@@ -49,27 +56,52 @@ public class KnowledgeExtractor {
 		
 		return result;
 	}
+	
+	public void runOnServer(){
+		int counter = 1;
+		ArrayList<String> kparseFile = Utilities.listFilesForFolder(new File(savedKparsesdirPath), false);
+		for(String listFile : kparseFile){
+			ArrayList<GraphPassingNode> listOfParses = (ArrayList<GraphPassingNode>) Utilities.load(savedKparsesdirPath+listFile);
+			for(GraphPassingNode gpn : listOfParses){
+				ArrayList<KnowledgeObject> kObjList;
+				try {
+					kObjList = extractKnowledge(gpn.getSentence(),gpn,null);
+					if(kObjList!=null){
+						for(KnowledgeObject kObj : kObjList){
+							kbo.updateKB(kObj);
+							System.out.println(counter);
+							counter++;
+						}
+					}
+				} catch (Exception e) {
+					System.err.println("Error in knowledge extraction!");
+//					e.printStackTrace();
+				}
+			}
+		}
+	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception{
 		KnowledgeExtractor kew = new KnowledgeExtractor();
-		String sent = "The driver then may have decided not to lift it because it was too heavy.";
-		sent = "For example, a maintenance van with heavy equipment in the back may not balance well on an asymmetric unit.";
-		sent = "Williams was reluctant to repeat what she had said to the official";
-		GraphPassingNode gpn = (GraphPassingNode)Utilities.load("gpn_example.ser");
-		ArrayList<KnowledgeObject> ks = kew.extractKnowledge(sent,gpn,null);
-		if(ks!=null){
-			for(KnowledgeObject kIs : ks){
-				System.out.println(kIs.getType());
-				for(String k : kIs.getRoot().getHasTriples()){
-					System.out.println(k);
-				}
-				System.out.println("******************************");
-				System.out.println(kIs.getRoot().getJSONObject().toJSONString());
-			}
-		}
+		kew.runOnServer();
+//		String sent = "The driver then may have decided not to lift it because it was too heavy.";
+//		sent = "For example, a maintenance van with heavy equipment in the back may not balance well on an asymmetric unit.";
+//		sent = "Williams was reluctant to repeat what she had said to the official";
+//		GraphPassingNode gpn = (GraphPassingNode)Utilities.load("gpn_example.ser");
+//		ArrayList<KnowledgeObject> ks = kew.extractKnowledge(sent,gpn,null);
+//		if(ks!=null){
+//			for(KnowledgeObject kIs : ks){
+//				System.out.println(kIs.getType());
+//				for(String k : kIs.getRoot().getHasTriples()){
+//					System.out.println(k);
+//				}
+//				System.out.println("******************************");
+//				System.out.println(kIs.getRoot().getJSONObject().toJSONString());
+//			}
+//		}
 		System.exit(0);
 		
 	}

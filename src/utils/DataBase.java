@@ -44,11 +44,21 @@ public class DataBase {
 		this("knetdb");
 	}
 	
-	public void updateKB(String jsonStr){
-		Document doc = Document.parse(jsonStr);
-		mainTable.insertOne(doc);
+	public void updateKB(Document doc){
+//		Document doc = Document.parse(jsonStr);
+//		Object id = doc.getString("_id");
+		Document doc1 = Document.parse("{$inc : {\"weight\" : 1}}");
+		mainTable.updateOne(doc, doc1);
+		
+		
+		
+//		mainTable.insertOne(doc);
 		
 //		mainTable.updateOne(doc, {"upsert":true});
+	}
+	
+	public void insertInKB(Document doc){
+		mainTable.insertOne(doc);
 	}
 	
 	public FindIterable<Document> find(){
@@ -67,17 +77,20 @@ public class DataBase {
 		
 		FindIterable<Document> docs = db.find();
 		for (Document doc : docs) {
-			System.out.println(doc.toString());
+			System.out.println(doc.toJson());
 		}
-		System.out.println("************************************************");
-		String jsonStr = "{\"prop\" : [{\"val\" : \"tiny\"} , {\"lemma\" : \"very small\"}], \"rel\" : \"prevents\", \"act\" : \"fit\", \"rel_act\" : \"recipient\", \"weight\" : 24.0 }";
-		db.updateKB(jsonStr);
+//		System.out.println("************************************************");
+//		String jsonStr = "{\"prop\" : [{\"val\" : \"tiny\"} , {\"lemma\" : \"very small\"}], \"rel\" : \"prevents\", \"act\" : \"fit\", \"rel_act\" : \"recipient\", \"weight\" : 24.0 }";
+//		db.updateKB(jsonStr);
+//		
+//		String jsonStr1 = "{\"rel\" : \"prevents\"}";
+//		docs = db.find(jsonStr1);
+//		for (Document doc : docs) {
+//			System.out.println(doc.toString());
+//		}
 		
-		String jsonStr1 = "{\"rel\" : \"prevents\"}";
-		docs = db.find(jsonStr1);
-		for (Document doc : docs) {
-			System.out.println(doc.toString());
-		}
+//		String str = "{ \"_id\" : { \"$oid\" : \"5bb2aaef68887c3a6bc80586\" }, \"weight\" : 1.0, \"type\" : \"action and prop\", \"knowledge\" : { \"attachment\" : { \"value\" : \"entity\" }, \"and\" : { \"value\" : \"separate\", \"is_trait_of\" : { \"value\" : \"entity\" } }, \"value\" : \"lead\" } }";
+//		db.updateKB(str);
 	}
 	
 }

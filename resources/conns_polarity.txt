@@ -1,2 +1,54 @@
-because	reverse
+# Each line of this document contains a causal discourse connective and its causality direction in the following format
+# CONNECTIVE\tCAUSALITY_DIRECTION
+#
+# Forward causal phrases from CausalNEt paper
+lead to	forward
+leads to	forward
+led to	forward
+leading to	forward
+give rise to	forward
+gave rise to	forward
+given rise to	forward
+giving rise to	forward
+induce	forward
+inducing	forward
+induced	forward
+induces	forward
+cause	forward
+causes	forward
+causing	forward
+caused	forward
+bring on	forward
+brings on	forward
+brought on	forward
+bringing on	forward
+comma thus	forward
+comma therefore	forward
+and hence	forward
+comma hence	forward
+comma consequently	forward
+and consequently	forward
+comma for this reason alone	forward
 so	forward
+in order to	forward
+that	forward
+when	forward
+to	forward
+until	forward
+#
+#
+# Backward causal phrases from CausalNet paper
+caused by	reverse
+result from	reverse
+resulting from	reverse
+results from	reverse
+resulted from	reverse
+comma because	reverse
+because	reverse
+because of	reverse
+comma inasmuch as	reverse
+due to	reverse
+in consequence of	reverse
+owing to	reverse
+as a result of	reverse
+as a consequence of	reverse

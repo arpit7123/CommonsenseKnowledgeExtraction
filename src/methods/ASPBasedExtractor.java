@@ -120,6 +120,7 @@ public class ASPBasedExtractor {
 				for(String kIns : kInstArr){
 					KnowledgeObject knowledge = getCondKnowledge(kIns);
 					if(knowledge!=null){
+						knowledge.setText(inputText);
 						result.add(knowledge);
 					}
 				}

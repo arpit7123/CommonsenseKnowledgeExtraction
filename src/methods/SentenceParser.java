@@ -80,7 +80,7 @@ public class SentenceParser {
 					}
 					if(listOfParses.size()>0){
 						System.out.println("Final");
-						Utilities.saveObject(listOfParses, outdirPath+sentIndx);
+						Utilities.saveObject(listOfParses, outdirPath+(sentIndx-1));
 					}
 				}catch(Exception e){
 					System.out.println("Error Encountered!");
@@ -95,12 +95,12 @@ public class SentenceParser {
 	
 	public static void main(String[] args) {
 		SentenceParser sp = new SentenceParser();
-		String sentence = "John lifted Tom because Tom was not heavy.";
-		
-		GraphPassingNode gpn = sp.parse(sentence);
-		for(String s : gpn.getAspGraph()){
-			System.out.println(s);
-		}
+//		String sentence = "John lifted Tom because Tom was not heavy.";
+		sp.runOnServer();
+//		GraphPassingNode gpn = sp.parse(sentence);
+//		for(String s : gpn.getAspGraph()){
+//			System.out.println(s);
+//		}
 		
 		
 		

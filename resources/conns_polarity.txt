@@ -22,13 +22,13 @@ bring on	forward
 brings on	forward
 brought on	forward
 bringing on	forward
-comma thus	forward
-comma therefore	forward
+, thus	forward
+, therefore	forward
 and hence	forward
-comma hence	forward
-comma consequently	forward
+, hence	forward
+, consequently	forward
 and consequently	forward
-comma for this reason alone	forward
+, for this reason alone	forward
 so	forward
 in order to	forward
 that	forward
@@ -43,10 +43,10 @@ result from	reverse
 resulting from	reverse
 results from	reverse
 resulted from	reverse
-comma because	reverse
+, because	reverse
 because	reverse
 because of	reverse
-comma inasmuch as	reverse
+, inasmuch as	reverse
 due to	reverse
 in consequence of	reverse
 owing to	reverse

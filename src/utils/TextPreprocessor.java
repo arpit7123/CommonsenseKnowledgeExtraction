@@ -6,8 +6,6 @@ package utils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -504,25 +502,25 @@ public class TextPreprocessor {
 		if(genderMap.containsKey(lowerWord)){
 				return genderMap.get(lowerWord);
 		}else{
-			Object gender = null;
-			String apiUrl = "https://api.genderize.io/?name="+word;
-			try{
-				URL url = new URL(apiUrl);
-				BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-				String line = null;
-				while((line=br.readLine())!=null){
-					org.json.simple.parser.JSONParser parser = new org.json.simple.parser.JSONParser();
-					org.json.simple.JSONObject obj = (org.json.simple.JSONObject)parser.parse(line);
-					gender = obj.get("gender");
-				}
-
-			}catch(IOException | org.json.simple.parser.ParseException e){
-				gender = "neutral";
-				System.err.println("Error Occurred in gender api");
-			}
-			if(gender!=null){
-				return (String)gender;
-			}
+//			Object gender = null;
+//			String apiUrl = "https://api.genderize.io/?name="+word;
+//			try{
+//				URL url = new URL(apiUrl);
+//				BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+//				String line = null;
+//				while((line=br.readLine())!=null){
+//					org.json.simple.parser.JSONParser parser = new org.json.simple.parser.JSONParser();
+//					org.json.simple.JSONObject obj = (org.json.simple.JSONObject)parser.parse(line);
+//					gender = obj.get("gender");
+//				}
+//
+//			}catch(IOException | org.json.simple.parser.ParseException e){
+//				gender = "neutral";
+//				System.err.println("Error Occurred in gender api");
+//			}
+//			if(gender!=null){
+//				return (String)gender;
+//			}
 			return "neutral";
 		}
 	}

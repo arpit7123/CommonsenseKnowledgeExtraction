@@ -117,15 +117,26 @@ public class ASP2KnowObject {
 	
 	public KnowledgeObject processASPIntoGraph(String aspFormatKnow, HashMap<String,Node> mapOfPrunedRoots){
 		KnowledgeObject knowledge = null;
+		if(!aspFormatKnow.startsWith("type")){
+//			aspFormatKnow = "type" + aspFormatKnow;
+			return knowledge;
+		}
 		String knowPrefix = aspFormatKnow.substring(0, aspFormatKnow.indexOf("("));
 		String knowCore = aspFormatKnow.substring(aspFormatKnow.indexOf("(")+1,aspFormatKnow.length()-1);
-		String[] tmp = knowCore.split(",");
-		
-		for(int i=0;i<tmp.length;i++){
-			if(tmp[i].startsWith("\"") && tmp[i].endsWith("\"")){
-				tmp[i] = tmp[i].substring(1, tmp[i].length()-1);
-			}
+		if(knowCore.startsWith("\"")){
+			knowCore = knowCore.substring(1);
 		}
+		if(knowCore.endsWith("\"")){
+			knowCore = knowCore.substring(0, knowCore.length()-1);
+		}
+		
+		String[] tmp = knowCore.split("\",\"");
+		
+//		for(int i=0;i<tmp.length;i++){
+//			if(tmp[i].startsWith("\"") && tmp[i].endsWith("\"")){
+//				tmp[i] = tmp[i].substring(1, tmp[i].length()-1);
+//			}
+//		}
 		
 		switch (knowPrefix){
 
@@ -136,8 +147,7 @@ public class ASP2KnowObject {
 				String traitLemma = trait;
 				if(trait.matches("(.*)(-)([0-9]{1,7})")){	
 					traitLemma = trait.substring(0, trait.lastIndexOf("-"));
-				}
-				if(trait.matches("(.*)(_)([0-9]{1,7})")){	
+				}else if(trait.matches("(.*)(_)([0-9]{1,7})")){	
 					traitLemma = trait.substring(0, trait.lastIndexOf("_"));
 				}
 				
@@ -205,7 +215,7 @@ public class ASP2KnowObject {
 				
 				knowledge.setRoot(root);
 			}else{
-				System.err.println("Error in processing Knowledge Type 2: " + aspFormatKnow);
+				System.err.println("Error in processing Knowledge Type 1: " + aspFormatKnow);
 			}
 
 			break;
@@ -348,9 +358,9 @@ public class ASP2KnowObject {
 				root.setEdges(edges);
 				root.setChildren(children);
 								
-				if(type.equals("one")){
+				if(type.equals("action causes action")){
 					edges.add("causes");
-				}else if (type.equals("five")){
+				}else if (type.equals("action prevents action")){
 					edges.add("prevents");
 				}
 				KnowledgeGraphNode ch3 = new KnowledgeGraphNode();
@@ -385,7 +395,7 @@ public class ASP2KnowObject {
 				
 				knowledge.setRoot(root);
 			}else{
-				System.err.println("Error in processing Knowledge Type 1: " + aspFormatKnow);
+				System.err.println("Error in processing Knowledge Type 2: " + aspFormatKnow);
 			}
 			break;
 
@@ -396,8 +406,7 @@ public class ASP2KnowObject {
 				String traitLemma = trait;
 				if(trait.matches("(.*)(-)([0-9]{1,7})")){	
 					traitLemma = trait.substring(0, trait.lastIndexOf("-"));
-				}
-				if(trait.matches("(.*)(_)([0-9]{1,7})")){	
+				}else if(trait.matches("(.*)(_)([0-9]{1,7})")){	
 					traitLemma = trait.substring(0, trait.lastIndexOf("_"));
 				}
 				boolean traitPolarity = false;

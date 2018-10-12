@@ -1,6 +1,7 @@
 package utils;
 
 import java.net.UnknownHostException;
+import java.util.List;
 
 import org.bson.Document;
 
@@ -44,17 +45,11 @@ public class DataBase {
 		this("knetdb");
 	}
 	
-	public void updateKB(Document doc){
-//		Document doc = Document.parse(jsonStr);
-//		Object id = doc.getString("_id");
-		Document doc1 = Document.parse("{$inc : {\"weight\" : 1}}");
+	public void updateKB(Document doc, String text){
+//		Document doc1 = Document.parse("{$inc : {\"weight\" : 1}}");
+//		mainTable.updateOne(doc, doc1);
+		Document doc1 = Document.parse("{$inc : {\"weight\" : 1}, $addToSet : {\"texts\" : \"" + text + "\"}}");
 		mainTable.updateOne(doc, doc1);
-		
-		
-		
-//		mainTable.insertOne(doc);
-		
-//		mainTable.updateOne(doc, {"upsert":true});
 	}
 	
 	public void insertInKB(Document doc){

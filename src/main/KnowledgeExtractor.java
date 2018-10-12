@@ -57,6 +57,7 @@ public class KnowledgeExtractor {
 		return result;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void runOnServer(){
 		int counter = 1;
 		ArrayList<String> kparseFile = Utilities.listFilesForFolder(new File(savedKparsesdirPath), false);
@@ -74,9 +75,55 @@ public class KnowledgeExtractor {
 						}
 					}
 				} catch (Exception e) {
+//					e.printStackTrace();
 					System.err.println("Error in knowledge extraction!");
 //					e.printStackTrace();
 				}
+			}
+		}
+	}
+	
+	public void extractAndSaveToDB(String text){
+		ArrayList<KnowledgeObject> kObjList;
+		try {
+			kObjList = extractKnowledge(text,null,null);
+			if(kObjList!=null){
+				for(KnowledgeObject kObj : kObjList){
+					kbo.updateKB(kObj);
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("Error in knowledge extraction!");
+		}
+		System.out.println("Knowledge successfully extracted and saved to DB");
+	}
+	
+	public void extractAndPrint(String text) throws Exception{
+		ArrayList<KnowledgeObject> ks = extractKnowledge(text,null,null);
+		if(ks!=null){
+			for(KnowledgeObject kIs : ks){
+				System.out.println(kIs.getType());
+				for(String k : kIs.getRoot().getHasTriples()){
+					System.out.println(k);
+				}
+				System.out.println("******************************");
+				System.out.println(kIs.getRoot().getJSONObject().toJSONString());
+			}
+		}
+	}
+	
+	public void extFrmKparserObjAndPrint(String kparserObjFile) throws Exception{
+//		kparserObjFile = "gpn_example.ser";
+		GraphPassingNode gpn = (GraphPassingNode)Utilities.load(kparserObjFile);
+		ArrayList<KnowledgeObject> ks = extractKnowledge(gpn.getSentence(),gpn,null);
+		if(ks!=null){
+			for(KnowledgeObject kIs : ks){
+				System.out.println(kIs.getType());
+				for(String k : kIs.getRoot().getHasTriples()){
+					System.out.println(k);
+				}
+				System.out.println("******************************");
+				System.out.println(kIs.getRoot().getJSONObject().toJSONString());
 			}
 		}
 	}
@@ -86,22 +133,15 @@ public class KnowledgeExtractor {
 	 */
 	public static void main(String[] args) throws Exception{
 		KnowledgeExtractor kew = new KnowledgeExtractor();
-		kew.runOnServer();
-//		String sent = "The driver then may have decided not to lift it because it was too heavy.";
-//		sent = "For example, a maintenance van with heavy equipment in the back may not balance well on an asymmetric unit.";
-//		sent = "Williams was reluctant to repeat what she had said to the official";
-//		GraphPassingNode gpn = (GraphPassingNode)Utilities.load("gpn_example.ser");
-//		ArrayList<KnowledgeObject> ks = kew.extractKnowledge(sent,gpn,null);
-//		if(ks!=null){
-//			for(KnowledgeObject kIs : ks){
-//				System.out.println(kIs.getType());
-//				for(String k : kIs.getRoot().getHasTriples()){
-//					System.out.println(k);
-//				}
-//				System.out.println("******************************");
-//				System.out.println(kIs.getRoot().getJSONObject().toJSONString());
-//			}
-//		}
+		String sent = "The driver then may have decided not to lift it because it was too heavy.";
+		sent = "For example, a maintenance van with heavy equipment in the back may not balance well on an asymmetric unit.";
+		sent = "Williams was reluctant to repeat what she had said to the official";
+		sent = "Hannah was bullying Claire, for this reason alone Hannah was punished";
+		
+//		kew.runOnServer();
+		kew.extractAndSaveToDB(sent);
+		
+		
 		System.exit(0);
 		
 	}

@@ -54,6 +54,8 @@ public class ASPBasedExtractor {
 		ASPBasedExtractor main = new ASPBasedExtractor();
 		String sentence = "Usually when I eat it is because I am hungry.";
 		sentence = "Williams was reluctant to repeat what she had said to the official";
+		sentence = "Tom was bullying James, for this reason alone Tom was punished";
+//		sentence = "Tom was bullying James and consequently we punished Tom.";
 		ArrayList<String> know = main.getKnowledge(sentence,null,null);
 		if(know!=null){
 			for(String s : know){
@@ -109,7 +111,7 @@ public class ASPBasedExtractor {
 				if(i==0){
 					result = new ArrayList<KnowledgeObject>();
 				}
-				String[] kInstArr = kInstance.split(" ");
+				String[] kInstArr = kInstance.split("\\) type");
 				////////////////////On Nov 22 2017 /////////////////////////////////////////////////////
 				// Adding postprocessing step to extract the knowledge instances which were not extracted due to incorrect parsing.
 				// Example: answerEventsType1(positive,comforted_3,comfort,recipient,me_4,because,positive,upset_9,upset,recipient,me_4) is used to extract,

@@ -1296,14 +1296,14 @@ public class LocalKparser implements SentenceToGraphInterface{
 		ArrayList<String> result = new ArrayList<String>();
 		for(String s : kInstances){
 			result.add(s);
-			if(s.startsWith("answerEventsType1")){
-				s = s.substring(18, s.length()-1);
-				String[] tmpArr = s.split(",");
+			if(s.startsWith("type2")){
+				s = s.substring(7, s.length()-2);
+				String[] tmpArr = s.split("\",\"");
 				if(tmpArr.length == 11){
 					if(tmpArr[5].equals("because")){
 						if(resourceHandler.verbUsedAsAdj(tmpArr[8]) 
 								&& tmpArr[9].equals("recipient")){
-							result.add("answerType3("+tmpArr[0]+","+tmpArr[8]+","+tmpArr[1]+","+tmpArr[2]+","+tmpArr[3]+")");
+							result.add("type3(\""+tmpArr[0]+"\",\""+tmpArr[8]+"\",\""+tmpArr[1]+"\",\""+tmpArr[2]+"\",\""+tmpArr[3]+"\")");
 						}
 					}
 				}

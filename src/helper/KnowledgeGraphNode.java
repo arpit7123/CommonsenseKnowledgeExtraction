@@ -45,7 +45,12 @@ public class KnowledgeGraphNode implements Serializable{
 	}
 	
 	public JSONObject getJSONObject(){
-		return traverseANode(this);
+		JSONObject obj = traverseANode(this);
+		return obj;
+	}
+	
+	public String getJSONString(){
+		return traverseANode(this).toJSONString();
 	}
 	
 	@SuppressWarnings("unchecked")

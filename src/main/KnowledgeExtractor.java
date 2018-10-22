@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import utils.Configurations;
 import kparser.devel.Utilities;
@@ -59,28 +60,46 @@ public class KnowledgeExtractor {
 	
 	@SuppressWarnings("unchecked")
 	public void runOnServer(){
+		HashSet<String> setOfDoneFiles = getSetOfDoneFiles();
 		int counter = 1;
 		ArrayList<String> kparseFile = Utilities.listFilesForFolder(new File(savedKparsesdirPath), false);
 		for(String listFile : kparseFile){
-			ArrayList<GraphPassingNode> listOfParses = (ArrayList<GraphPassingNode>) Utilities.load(savedKparsesdirPath+listFile);
-			for(GraphPassingNode gpn : listOfParses){
-				ArrayList<KnowledgeObject> kObjList;
-				try {
-					kObjList = extractKnowledge(gpn.getSentence(),gpn,null);
-					if(kObjList!=null){
-						for(KnowledgeObject kObj : kObjList){
-							kbo.updateKB(kObj);
-							System.out.println(counter);
-							counter++;
+			System.out.println(listFile);
+			if(!setOfDoneFiles.contains(listFile)){
+				ArrayList<GraphPassingNode> listOfParses = (ArrayList<GraphPassingNode>) Utilities.load(savedKparsesdirPath+listFile);
+				for(GraphPassingNode gpn : listOfParses){
+					ArrayList<KnowledgeObject> kObjList;
+					try {
+						kObjList = extractKnowledge(gpn.getSentence(),gpn,null);
+						if(kObjList!=null){
+							for(KnowledgeObject kObj : kObjList){
+								kbo.updateKB(kObj);
+//								System.out.println(counter);
+								counter++;
+							}
 						}
+					} catch (Exception e) {
+						//					e.printStackTrace();
+						System.err.println("Error in knowledge extraction!");
+						//					e.printStackTrace();
 					}
-				} catch (Exception e) {
-//					e.printStackTrace();
-					System.err.println("Error in knowledge extraction!");
-//					e.printStackTrace();
 				}
 			}
 		}
+	}
+	
+	public HashSet<String> getSetOfDoneFiles(){
+		HashSet<String> result = new HashSet<String>();
+		String fileNamesFilePath = Configurations.getProperty("knowextfrom");
+		try(BufferedReader br = new BufferedReader(new FileReader(fileNamesFilePath))){
+			String line = null;
+			while((line=br.readLine())!=null){
+				result.add(line);
+			}
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 	
 	public void extractAndSaveToDB(String text){

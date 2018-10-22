@@ -138,8 +138,8 @@ public class KnowledgeExtractor {
 		sent = "Williams was reluctant to repeat what she had said to the official";
 		sent = "Hannah was bullying Claire, for this reason alone Hannah was punished";
 		
-//		kew.runOnServer();
-		kew.extractAndSaveToDB(sent);
+		kew.runOnServer();
+//		kew.extractAndSaveToDB(sent);
 		
 		
 		System.exit(0);

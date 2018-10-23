@@ -1,7 +1,6 @@
 package utils;
 
 import java.net.UnknownHostException;
-import java.util.List;
 
 import org.bson.Document;
 
@@ -30,19 +29,18 @@ public class DataBase {
 	public static DataBase getInstance(){
 		return instance;
 	}
-		
+	
 	/**
 	 * 
 	 * @throws UnknownHostException
 	 */
-	private DataBase(String dbName ) throws UnknownHostException{
-		mongoClient = new MongoClient();
-		db = mongoClient.getDatabase(dbName);
-		mainTable = db.getCollection("maintable");
-	}
-	
 	private DataBase() throws UnknownHostException{
-		this("knetdb");
+		String mongoServer = Configurations.getProperty("mongoserver");
+		String dbName = Configurations.getProperty("mongodbname");
+		String collection = Configurations.getProperty("mongodbcollection");
+		mongoClient = new MongoClient(mongoServer, 27017);
+		db = mongoClient.getDatabase(dbName);
+		mainTable = db.getCollection(collection);
 	}
 	
 	public void updateKB(Document doc, String text){

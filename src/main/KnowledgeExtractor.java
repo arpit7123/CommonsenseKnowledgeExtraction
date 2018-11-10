@@ -7,8 +7,10 @@ import helper.DiscourseInfo;
 import helper.KnowledgeObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,13 +61,21 @@ public class KnowledgeExtractor {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void runOnServer(){
-		HashSet<String> setOfDoneFiles = getSetOfDoneFiles();
+	public void runOnServer() throws IOException{
+		String fileNamesFilePath = Configurations.getProperty("knowextfrom");
 		int counter = 1;
 		ArrayList<String> kparseFile = Utilities.listFilesForFolder(new File(savedKparsesdirPath), false);
+		BufferedWriter bw = null;
+		bw = new BufferedWriter(new FileWriter(fileNamesFilePath, true));
+		HashSet<String> setOfDoneFiles = getSetOfDoneFiles(fileNamesFilePath);
+		java.util.Collections.sort(kparseFile);
 		for(String listFile : kparseFile){
-			System.out.println(listFile);
 			if(!setOfDoneFiles.contains(listFile)){
+				System.out.println("Processing file "+listFile);
+				bw.write(listFile);
+				bw.newLine();
+				bw.flush();
+	
 				ArrayList<GraphPassingNode> listOfParses = (ArrayList<GraphPassingNode>) Utilities.load(savedKparsesdirPath+listFile);
 				for(GraphPassingNode gpn : listOfParses){
 					ArrayList<KnowledgeObject> kObjList;
@@ -84,20 +94,28 @@ public class KnowledgeExtractor {
 						//					e.printStackTrace();
 					}
 				}
+			} else {
+				System.out.println("skipping file " + listFile);
 			}
 		}
+
+		bw.close();
 	}
 	
-	public HashSet<String> getSetOfDoneFiles(){
+	public HashSet<String> getSetOfDoneFiles(String fileNamesFilePath) throws IOException{
 		HashSet<String> result = new HashSet<String>();
-		String fileNamesFilePath = Configurations.getProperty("knowextfrom");
-		try(BufferedReader br = new BufferedReader(new FileReader(fileNamesFilePath))){
+		BufferedReader br = null;
+		try{
+			br = new BufferedReader(new FileReader(fileNamesFilePath));
 			String line = null;
 			while((line=br.readLine())!=null){
 				result.add(line);
 			}
 		}catch(IOException e){
 			e.printStackTrace();
+		}
+		finally {
+			br.close();
 		}
 		return result;
 	}

@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,7 +78,10 @@ public class ClingoExecutor {
 
 			Process process;
 			process = Runtime.getRuntime().exec(cmd);
-			process.waitFor();
+			if(!process.waitFor(5, TimeUnit.SECONDS)) {
+				System.err.println("Clingo timed out");
+				return null;
+			}
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;

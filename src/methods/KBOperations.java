@@ -42,6 +42,11 @@ public class KBOperations {
 		}
 	}
 	
+	public FindIterable<Document> findInKB(String searchStr){
+		Document doc = Document.parse(searchStr);
+		return dbInstance.find(doc.toJson());
+	}
+	
 	public FindIterable<Document> findKnowledgeInKB(String searchStr){
 		Document doc = Document.parse(searchStr);
 		Document doc1 = new Document();
@@ -53,12 +58,14 @@ public class KBOperations {
 	public static void main(String[] args) {
 		KBOperations kbo = new KBOperations();
 		String searchStr = "{ \"agent\" : { \"value\" : \"entity\" }, \"and\" : { \"agent\" : { \"value\" : \"entity\" }, \"value\" : \"help\" }, \"value\" : \"try\" }";
+		searchStr = "{\"type\" : \"action causes action\"}";
 		String newText = "Because of this , and due to Man's World's respect of Diana , Artemis often would receive the cold shoulder from those she tried to help , extending even to her brief time";
 		FindIterable<Document> docs = kbo.findKnowledgeInKB(searchStr);
 		if(docs.iterator().hasNext()){
 			for(Document doc : docs){
-				kbo.dbInstance.updateKB(doc,newText);
-				break;
+				System.out.println("Here");
+//				kbo.dbInstance.updateKB(doc,newText);
+//				break;
 			}
 		}
 		System.exit(0);

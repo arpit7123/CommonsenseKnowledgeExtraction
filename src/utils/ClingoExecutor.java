@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,6 +50,7 @@ public class ClingoExecutor {
 
 	public ArrayList<String> callASPusingFilesList(ArrayList<String> listOfFiles) throws InterruptedException{// sentFile, String bkFile, String rulesFile){
 		String files = "";
+		String[] cmd;
 		for(String name : listOfFiles){
 			files = files + " " + name;
 		}
@@ -57,39 +59,44 @@ public class ClingoExecutor {
 		try {
 			switch (currentOS) {
 			case LINUX:
-				String[] cmd = {
+				cmd = new String[]{
 						"/bin/sh",
 						"-c",
 						command
 				};
-				Process process;
-				process = Runtime.getRuntime().exec(cmd);
-				process.waitFor();
-
-				BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-				String line = null;
-				while((line=stdInput.readLine())!=null){
-					Pattern p = Pattern.compile(".*Answer.*");
-					Matcher m = p.matcher(line);
-					if(m.find()){
-						if(result==null){
-							result=new ArrayList<String>();
-						}
-						line=stdInput.readLine();
-						if(!line.trim().equalsIgnoreCase("")){
-							result.add(line);
-						}
-					}
-				}
 				break;
-			default:
-				@SuppressWarnings("unused")
-				String[] cmd2 = {
+			case WINDOWS:
+				cmd = new String[]{
 						"cmd",
 						"/c",
 						command
 				};
 				break;
+			default:
+				throw new IOException("Unknown Operating System");
+			}
+
+			Process process;
+			process = Runtime.getRuntime().exec(cmd);
+			if(!process.waitFor(5, TimeUnit.SECONDS)) {
+				System.err.println("Clingo timed out");
+				return null;
+			}
+
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line = null;
+			while((line=stdInput.readLine())!=null){
+				Pattern p = Pattern.compile(".*Answer.*");
+				Matcher m = p.matcher(line);
+				if(m.find()){
+					if(result==null){
+						result=new ArrayList<String>();
+					}
+					line=stdInput.readLine();
+					if(!line.trim().equalsIgnoreCase("")){
+						result.add(line);
+					}
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

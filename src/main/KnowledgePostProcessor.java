@@ -46,7 +46,10 @@ public class KnowledgePostProcessor {
 			int knowCount = 0;
 			for(Document doc : fi){
 				System.out.println(knowCount++);
-				
+				if(knowCount>Integer.parseInt(Configurations.getProperty("dbquery_limit"))){
+					bw.close();
+					return;
+				}
 				ArrayList<String> texts = (ArrayList<String>) doc.get("texts");
 				String sentence = texts.get(0);
 //				System.out.println(sentence);
@@ -365,17 +368,20 @@ public class KnowledgePostProcessor {
 	public static void main(String args[]) throws Exception{
 		KnowledgePostProcessor kpp = new KnowledgePostProcessor();
 		String filteredKnowFile = Configurations.getProperty("filteredKnow");
-		String[] queryParts = {"action","and","prop"};
-//		kpp.process(queryParts,filteredKnowFile);
+		String queryPart1 = Configurations.getProperty("dbquery_part1");
+		String queryPart2 = Configurations.getProperty("dbquery_part2");
+		String queryPart3 = Configurations.getProperty("dbquery_part3");
+		String[] queryParts = {queryPart1,queryPart2,queryPart3};
+		kpp.process(queryParts,filteredKnowFile);
 		
 		
-		String sentence = "Specifically , the NTSB faulted the captain for failing to take control of the aircraft or abort the landing earlier , noting that the captain had warnings at 500 feet and at 100 to 200 feet and could have aborted the landing at that time .";
-		sentence = "Incensed at Tinatin's decision , he further disowned her children and favored his offspring of his second marriage , giving rise to a family feud after his death in Wednesday .";
+//		String sentence = "Specifically , the NTSB faulted the captain for failing to take control of the aircraft or abort the landing earlier , noting that the captain had warnings at 500 feet and at 100 to 200 feet and could have aborted the landing at that time .";
+//		sentence = "Incensed at Tinatin's decision , he further disowned her children and favored his offspring of his second marriage , giving rise to a family feud after his death in Wednesday .";
 //		GraphPassingNode gpn = kpp.sentParser.parse(sentence);
 //		sentence = gpn.getSentence();
 //		GraphPassingNode gpn = new GraphPassingNode(null,null,sentence,null); 
 				
-		ActionsInfo ai = new ActionsInfo();
+//		ActionsInfo ai = new ActionsInfo();
 //		
 //		TreeMap<Integer,String> t1 = new TreeMap<Integer,String>();
 //		t1.put(1,"Specifically-1");{-1=person, 7=person, 13=favor, 15=offspring-15}
@@ -392,16 +398,16 @@ public class KnowledgePostProcessor {
 //		t2.put(42,"landing-42");
 //		t2.put(45,"time-45");
 //		
-		TreeMap<Integer,String> t1 = new TreeMap<Integer,String>();
-		t1.put(-1,"person");
-		t1.put(7,"person");
-		t1.put(13,"favour");
-		t1.put(15,"offspring-15");
-		
-		TreeMap<Integer,String> t2 = null;
-		ai.setAction1Map(t1);
-		ai.setAction2Map(t2);
-		System.out.println(kpp.filterKnowledge(sentence, ai, "favour", null, "further", "and"));
+//		TreeMap<Integer,String> t1 = new TreeMap<Integer,String>();
+//		t1.put(-1,"person");
+//		t1.put(7,"person");
+//		t1.put(13,"favour");
+//		t1.put(15,"offspring-15");
+//		
+//		TreeMap<Integer,String> t2 = null;
+//		ai.setAction1Map(t1);
+//		ai.setAction2Map(t2);
+//		System.out.println(kpp.filterKnowledge(sentence, ai, "favour", null, "further", "and"));
 		
 		
 		

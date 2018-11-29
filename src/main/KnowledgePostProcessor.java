@@ -46,6 +46,10 @@ public class KnowledgePostProcessor {
 			int knowCount = 0;
 			for(Document doc : fi){
 				System.out.println(knowCount++);
+				if(knowCount>Integer.parseInt(Configurations.getProperty("skip_until"))){
+					continue;
+				}
+				
 				if(knowCount>Integer.parseInt(Configurations.getProperty("dbquery_limit"))){
 					bw.close();
 					return;

@@ -37,12 +37,15 @@ public class KnowledgePostProcessor {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void process(String[] parts, String filteredKnowFile){
+	public void process(String[] parts, String filteredKnowDir){
 		String dbQuery = "{type:'" + parts[0] + " " + parts[1] + " " + parts[2] +"'}";
 		FindIterable<Document> fi = kbo.findInKB(dbQuery);
 		
-		boolean skip = true;
-		try(BufferedWriter bw = new BufferedWriter(new FileWriter(filteredKnowFile))){
+//		boolean skip = true;
+		int counter = 1;
+		String filteredKnowFile = filteredKnowDir + counter;
+		try{
+			BufferedWriter bw = new BufferedWriter(new FileWriter(filteredKnowFile));
 			int knowCount = 0;
 			for(Document doc : fi){
 				System.out.println(knowCount++);
@@ -157,12 +160,22 @@ public class KnowledgePostProcessor {
 				}
 				try{
 					String filteredKnow = filterKnowledge(gpn.getSentence(), ai, action1, action2, prop, parts[1]);
-					bw.write(filteredKnow);
+					bw.write(filteredKnow+"\t"+sentence);
 					bw.newLine();
 				}catch(Exception e){
 					System.err.println("Error in filtering!");
 				}
+				
+				counter++;
+				if(counter%Integer.parseInt(Configurations.getProperty("know_file_splitter"))==0){
+					bw.close();
+					bw = new BufferedWriter(new FileWriter(filteredKnowDir+counter));
+				}
+				
 			}
+			
+			bw.close();
+			
 		}catch(IOException e){
 			e.printStackTrace();
 		}
